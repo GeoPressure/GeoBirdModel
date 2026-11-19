@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bird Models · GeoPressure</title>
+<meta name="description" content="Flapping 3D bird models (glTF) of the species tracked with multi-sensor geolocators, made for GeoLocator Explorer. Free to reuse under CC BY 4.0.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600&display=swap" rel="stylesheet">
+<script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@3.5.0/dist/model-viewer.min.js"></script>
+<style>
+:root {
+  --bg: #f4f1ea; --card: #fffdf8; --ink: #1b2230; --muted: #5d6573; --line: #e2dccf;
+  --accent: #1f6f5c; --accent-ink: #ffffff; --stage: #ece7dc; --shadow: 0 1px 2px rgba(20,25,35,.06), 0 6px 18px rgba(20,25,35,.06);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #11151c; --card: #181e27; --ink: #eef0f3; --muted: #9aa3b0; --line: #2a323e;
+    --accent: #5fc2a6; --accent-ink: #0d1a16; --stage: #1f2631; --shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 18px rgba(0,0,0,.25);
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #11151c; --card: #181e27; --ink: #eef0f3; --muted: #9aa3b0; --line: #2a323e;
+  --accent: #5fc2a6; --accent-ink: #0d1a16; --stage: #1f2631; --shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 18px rgba(0,0,0,.25);
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.55 Sora, system-ui, sans-serif; }
+a { color: var(--accent); }
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 16px; }
+header { padding: 40px 0 8px; }
+.kicker { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin: 0 0 6px; }
+h1 { font-size: clamp(26px, 4vw, 36px); font-weight: 600; margin: 0 0 10px; letter-spacing: -.01em; }
+.lede { max-width: 720px; color: var(--muted); margin: 0 0 22px; }
+.bar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 18px; }
+input[type=search] { flex: 1 1 240px; min-width: 0; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--card); color: var(--ink); font: inherit; }
+.count { color: var(--muted); font-size: 13px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow); display: flex; flex-direction: column; cursor: pointer; transition: transform .15s ease; text-align: left; padding: 0; color: inherit; font: inherit; }
+.card:hover, .card:focus-visible { transform: translateY(-2px); outline: none; border-color: var(--accent); }
+.card .img { aspect-ratio: 4 / 3; background: var(--stage); display: grid; place-items: center; }
+.card img { width: 88%; height: 88%; object-fit: contain; }
+.card .meta { padding: 10px 12px 12px; }
+.card .en { font-weight: 600; }
+.card .sci { font-style: italic; color: var(--muted); font-size: 13px; }
+dialog { width: min(920px, calc(100vw - 32px)); max-height: calc(100vh - 32px); padding: 0; border: 1px solid var(--line); border-radius: 16px; background: var(--card); color: var(--ink); }
+dialog::backdrop { background: rgba(10, 14, 20, .55); }
+.dlg { display: grid; grid-template-columns: 1fr 280px; }
+model-viewer { width: 100%; height: min(70vh, 560px); background: var(--stage); --poster-color: transparent; }
+.side { padding: 18px; display: flex; flex-direction: column; gap: 10px; overflow: auto; }
+.side h2 { margin: 0; font-size: 20px; font-weight: 600; }
+.side .sci { font-style: italic; color: var(--muted); margin-top: -6px; }
+.side dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; font-size: 13px; }
+.side dt { color: var(--muted); }
+.side dd { margin: 0; overflow-wrap: anywhere; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 9px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--card); color: var(--ink); text-decoration: none; font: inherit; font-size: 14px; cursor: pointer; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.row { display: flex; gap: 8px; flex-wrap: wrap; }
+.sticker { width: 100%; max-height: 150px; object-fit: contain; background: #fff; border-radius: 10px; border: 1px solid var(--line); }
+.close { position: absolute; top: 10px; right: 10px; z-index: 2; width: 34px; height: 34px; border-radius: 50%; padding: 0; }
+section.use { margin: 44px 0; }
+section.use h2 { font-size: 20px; font-weight: 600; margin: 0 0 8px; }
+pre { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px; overflow-x: auto; font-size: 13px; line-height: 1.5; }
+footer { color: var(--muted); font-size: 13px; padding: 24px 0 48px; border-top: 1px solid var(--line); }
+@media (max-width: 720px) { .dlg { grid-template-columns: 1fr; } model-viewer { height: 52vh; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="kicker">GeoPressure · GeoLocator Explorer</p>
+    <h1>Bird models</h1>
+    <p class="lede">Flapping 3D models of the bird species tracked with multi-sensor geolocators, made for the bird view of
+      <a href="https://geopressure.org/GeoLocatorExplorer/">GeoLocator Explorer</a>. Click a bird to see it fly, turn it around and download it.
+      Free to reuse under CC BY 4.0.</p>
+  </header>
+  <div class="bar">
+    <input id="q" type="search" placeholder="Search by English or scientific name" aria-label="Search birds">
+    <span class="count" id="count"></span>
+  </div>
+  <div class="grid" id="grid"></div>
+
+  <section class="use">
+    <h2>Use a model</h2>
+    <p>Every model is a glTF binary (<code>.glb</code>, about 2 MB) with one looping animation, <code>Fly</code>
+      (one wing beat per second). Head along +Y, back along +Z (glTF axes), wingspan 0.5 units.
+      All models are listed in <a href="models.json">models.json</a>; files are served through the jsDelivr CDN:</p>
+<pre>https://cdn.jsdelivr.net/gh/GeoPressure/bird-models@main/models/Upupa_epops.glb</pre>
+    <p>In a web page with <a href="https://modelviewer.dev">&lt;model-viewer&gt;</a>:</p>
+<pre>&lt;script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@3.5.0/dist/model-viewer.min.js"&gt;&lt;/script&gt;
+&lt;model-viewer src="https://cdn.jsdelivr.net/gh/GeoPressure/bird-models@main/models/Upupa_epops.glb"
+  animation-name="Fly" autoplay camera-controls&gt;&lt;/model-viewer&gt;</pre>
+    <p>In three.js: load with <code>GLTFLoader</code> and play <code>gltf.animations[0]</code> with an <code>AnimationMixer</code>.</p>
+  </section>
+
+  <footer>
+    Models by <a href="https://github.com/GeoPressure/bird-models">GeoPressure/bird-models</a> (Raphaël Nussbaumer, Swiss Ornithological Institute),
+    made from the <a href="https://github.com/alchaincyf/huashu-bird-sticker">huashu-bird-sticker</a> illustrations by Huashu (CC BY 4.0)
+    with <a href="https://www.meshy.ai">Meshy</a> and Blender; method in
+    <a href="https://github.com/GeoPressure/GeoLocatorExplorer/tree/main/bird-models">GeoLocatorExplorer/bird-models</a>.
+    Licence <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. AI-generated illustrations, not checked by experts in every detail.
+  </footer>
+</div>
+
+<dialog id="dlg" aria-label="Bird model">
+  <button class="btn close" id="close" aria-label="Close">✕</button>
+  <div class="dlg">
+    <model-viewer id="mv" animation-name="Fly" autoplay camera-controls touch-action="pan-y"
+      shadow-intensity="0" exposure="1.05" camera-orbit="35deg 65deg auto" interaction-prompt="none"></model-viewer>
+    <div class="side">
+      <h2 id="d-en"></h2>
+      <div class="sci" id="d-sci"></div>
+      <img class="sticker" id="d-sticker" alt="Source illustration">
+      <div class="row">
+        <a class="btn primary" id="d-dl" download>Download .glb</a>
+        <button class="btn" id="d-anim">Pause</button>
+      </div>
+      <dl>
+        <dt>Size</dt><dd id="d-size"></dd>
+        <dt>Updated</dt><dd id="d-upd"></dd>
+        <dt>Method</dt><dd id="d-method"></dd>
+        <dt>Licence</dt><dd>CC BY 4.0</dd>
+      </dl>
+    </div>
+  </div>
+</dialog>
+
+<script>
+const grid = document.getElementById("grid"), q = document.getElementById("q"), count = document.getElementById("count");
+const dlg = document.getElementById("dlg"), mv = document.getElementById("mv");
+let birds = [];
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+function render() {
+  const term = q.value.trim().toLowerCase();
+  const list = birds.filter((b) => !term || (b.english_name + " " + b.scientific_name).toLowerCase().includes(term));
+  grid.innerHTML = list.map((b, i) => `
+    <button class="card" data-i="${birds.indexOf(b)}" aria-label="View ${esc(b.english_name)} in 3D">
+      <div class="img"><img src="${esc(b.poster)}" alt="" loading="lazy"></div>
+      <div class="meta"><div class="en">${esc(b.english_name)}</div><div class="sci">${esc(b.scientific_name)}</div></div>
+    </button>`).join("");
+  count.textContent = `${list.length} of ${birds.length} species`;
+}
+function open(b) {
+  mv.src = b.model;
+  mv.poster = b.poster;
+  document.getElementById("d-en").textContent = b.english_name;
+  document.getElementById("d-sci").textContent = b.scientific_name;
+  document.getElementById("d-sticker").src = b.sticker;
+  document.getElementById("d-dl").href = b.model;
+  document.getElementById("d-size").textContent = (b.size_kb / 1024).toFixed(1) + " MB";
+  document.getElementById("d-upd").textContent = b.updated;
+  document.getElementById("d-method").textContent = b.method;
+  document.getElementById("d-anim").textContent = "Pause";
+  dlg.showModal();
+  history.replaceState(null, "", "#" + b.scientific_name.replace(/ /g, "_"));
+}
+grid.addEventListener("click", (e) => { const c = e.target.closest(".card"); if (c) open(birds[+c.dataset.i]); });
+q.addEventListener("input", render);
+document.getElementById("close").onclick = () => dlg.close();
+dlg.addEventListener("close", () => { mv.pause(); history.replaceState(null, "", location.pathname); });
+dlg.addEventListener("click", (e) => { if (e.target === dlg) dlg.close(); });
+document.getElementById("d-anim").onclick = (e) => {
+  if (mv.paused) { mv.play(); e.target.textContent = "Pause"; } else { mv.pause(); e.target.textContent = "Play"; }
+};
+fetch("models.json").then((r) => r.json()).then((d) => {
+  birds = d.birds.sort((a, b) => a.english_name.localeCompare(b.english_name));
+  render();
+  const h = decodeURIComponent(location.hash.slice(1)).replace(/_/g, " ");
+  const b = birds.find((x) => x.scientific_name === h);
+  if (b) open(b);
+});
+</script>
+</body>
+</html>
