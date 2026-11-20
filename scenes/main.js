@@ -1,4 +1,5 @@
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js';
+// three: the minified build, the same URL as "three" in index.html's import map (the addons import "three")
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js';
 import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/loaders/GLTFLoader.js';
 import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/controls/OrbitControls.js';
 import { EffectComposer } from 'https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/postprocessing/EffectComposer.js';
@@ -16,7 +17,9 @@ const $id = (id) => document.getElementById(id) || document.createElement('div')
 const canvas = document.getElementById('c');
 // driven by the gallery (../index.html, gallery.js) through window.__scenes; UI elements optional
 // alpha: the 'No background' scene leaves the canvas transparent over the page
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' });
+// antialias: false: everything reaches the canvas through the composer's last pass (a full-screen
+// quad); the multisampling is done in the composer's HDR target, a multisampled canvas would only add a resolve
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: true, powerPreference: 'high-performance' });
 renderer.setClearColor(0x000000, 0);
 let pixelRatio = Math.min(window.devicePixelRatio || 1, 1.25);
 renderer.setPixelRatio(pixelRatio);
@@ -123,17 +126,38 @@ bgScene.add(sky);
 }
 
 // ------------------------------------------------------------ terrain clipmap
+// Each level but the finest has a hole where the next finer level is drawn. The hole is cut out of the
+// index buffer, not discarded in the fragment shader (a discard defeats the GPU's hidden-surface removal,
+// so every hidden terrain fragment would be shaded). The finer level's centre is offset by -1, 0 or +1 cell
+// from this level's centre (both snap to multiples of their spacing), so 9 index buffers cover every case;
+// the cells cut are those entirely within (half size - 1 cell) of the finer level's centre, as before.
 const gridGeo = new THREE.PlaneGeometry(GRID, GRID, GRID, GRID);
 gridGeo.rotateX(-Math.PI / 2);
+const holeGeos = [];   // [ (oz + 1) * 3 + (ox + 1) ]
+{
+  const V = GRID + 1, half = GRID / 4 - 1;   // finer level half size, in this level's cells
+  for (let oz = -1; oz <= 1; oz++) for (let ox = -1; ox <= 1; ox++) {
+    const idx = [];
+    for (let iz = 0; iz < GRID; iz++) for (let ix = 0; ix < GRID; ix++) {
+      if (Math.abs(ix + 0.5 - GRID / 2 - ox) < half && Math.abs(iz + 0.5 - GRID / 2 - oz) < half) continue;
+      const a = ix + V * iz, b = ix + V * (iz + 1), c = ix + 1 + V * (iz + 1), d = ix + 1 + V * iz;
+      idx.push(a, b, d, b, c, d);
+    }
+    const g = new THREE.BufferGeometry();
+    for (const k in gridGeo.attributes) g.setAttribute(k, gridGeo.attributes[k]);
+    g.setIndex(idx);
+    holeGeos.push(g);
+  }
+}
 const levels = [];
 for (let k = 0; k < LEVELS; k++) {
   const s = S0 * 2 ** k;
   const mat = new THREE.ShaderMaterial({
-    uniforms: { ...U, uSpacing: { value: s }, uHalf: { value: GRID / 2 }, uInner: { value: new THREE.Vector4() } },
+    uniforms: { ...U, uSpacing: { value: s }, uHalf: { value: GRID / 2 } },
     vertexShader: S.TERRAIN_VS, fragmentShader: S.TERRAIN_FS, defines: { HABITAT: 0 },
     extensions: { derivatives: true },
   });
-  const mesh = new THREE.Mesh(gridGeo, mat);
+  const mesh = new THREE.Mesh(k ? holeGeos[4] : gridGeo, mat);
   mesh.scale.set(s, 1, s); mesh.frustumCulled = false; mesh.renderOrder = 0;
   bgScene.add(mesh);
   levels.push({ mesh, mat, s });
@@ -145,8 +169,10 @@ function updateTerrain() {
     const step = 2 * L.s;
     const cx = Math.round(c.x / step) * step, cz = Math.round(c.z / step) * step;
     L.mesh.position.set(cx, 0, cz);
-    if (prev) L.mat.uniforms.uInner.value.set(prev.mesh.position.x, prev.mesh.position.z, prev.s * GRID / 2, 1);
-    else L.mat.uniforms.uInner.value.set(0, 0, 0, 0);
+    if (prev) {
+      const ox = Math.round((prev.mesh.position.x - cx) / L.s), oz = Math.round((prev.mesh.position.z - cz) / L.s);
+      L.mesh.geometry = holeGeos[(oz + 1) * 3 + (ox + 1)];
+    }
     prev = L;
   }
 }
@@ -356,6 +382,8 @@ async function loadBird(path) {
   try {
     const gltf = await loader.loadAsync(path);
     if (token !== birdToken) return;
+    await compileOff(gltf.scene, cam, fgScene);   // its shaders, before it joins the scene: no freeze
+    if (token !== birdToken) return;
     if (bird) { fgScene.remove(bird); bird.traverse((o) => { if (o.isMesh) { o.geometry.dispose(); } }); }
     bird = gltf.scene;
     bird.traverse((o) => { if (o.isMesh) { o.frustumCulled = false; } });
@@ -370,6 +398,9 @@ async function loadBird(path) {
 
 // ------------------------------------------------------------ post-processing: HDR, bloom, tone mapping
 const composer = new EffectComposer(renderer, new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: 4 }));
+// the scenes are drawn (multisampled) into renderTarget1 only; renderTarget2 is never written (bloom
+// adds into renderTarget1, OutputPass draws to the canvas), so it needs no multisampling
+composer.renderTarget2.samples = 0;
 const bgPass = new RenderPass(bgScene, bgCam);
 const emptyScene = new THREE.Scene();   // 'No background': only the bird, on a transparent canvas
 const fgPass = new RenderPass(fgScene, cam); fgPass.clear = false; fgPass.clearDepth = true;
@@ -440,16 +471,38 @@ function applyPreset(key) {
 const groundAlbedo = [[0.55, 0.38, 0.22], [0.40, 0.33, 0.18], [0.18, 0.2, 0.15], [0.2, 0.26, 0.12], [0.06, 0.06, 0.06], [0.03, 0.06, 0.10], [0.06, 0.12, 0.04], [0.45, 0.36, 0.22],
   [0.40, 0.34, 0.22], [0.48, 0.42, 0.28], [0.10, 0.13, 0.09], [0.32, 0.30, 0.24], [0.18, 0.22, 0.12]];
 
+// ------------------------------------------------------------ shader compilation off the main thread
+// With KHR_parallel_shader_compile, a new scene's shaders compile in the background while the fade
+// covers the canvas, and no frame is drawn until they are ready (drawing would wait for them on the
+// main thread, freezing the page). Without the extension: compiled at once, as before.
+const parallel = renderer.extensions.has('KHR_parallel_shader_compile');
+const compileOff = (scene, camera, target) => (parallel ? renderer.compileAsync(scene, camera, target) : Promise.resolve(renderer.compile(scene, camera, target)));
+let compiling = null;
+function prepare() {
+  const p = Promise.all([compileOff(bgPass.scene, bgCam), compileOff(fgScene, cam)]);
+  compiling = p;
+  p.finally(() => { if (compiling === p) compiling = null; });
+  return p;
+}
+
 // ------------------------------------------------------------ UI
 function setStatus(s) { $id('status').textContent = s; }
 // the scene is chosen by the gallery (gallery.js) through window.__scenes.switchScene
 let currentScene = 'kenya';
 const fade = $id('fade');
+// switching to the current scene only lifts the fade (once that scene is applied and its shaders are ready)
+let ready = Promise.resolve();
 function switchScene(k) {
-  if (!PRESETS[k] || (k === currentScene && preset)) return;
+  if (!PRESETS[k]) return;
+  if (k === currentScene && preset) { ready.then(() => { if (currentScene === k) fade.style.opacity = 0; }); return; }
   currentScene = k;
   fade.style.opacity = 1;
-  setTimeout(() => { applyPreset(k); renderer.compile(bgScene, bgCam); setTimeout(() => { fade.style.opacity = 0; }, 60); }, 260);
+  ready = new Promise((res) => setTimeout(() => {
+    if (currentScene !== k) return res();
+    applyPreset(k);
+    prepare().then(res);
+  }, 260));
+  ready.then(() => { if (currentScene === k) setTimeout(() => { fade.style.opacity = 0; }, 60); });
 }
 
 // ------------------------------------------------------------ resize + loop
@@ -475,13 +528,14 @@ window.addEventListener('resize', resize);
 new ResizeObserver(() => resize()).observe(canvas);   // the gallery resizes the stage without a window resize
 resize();
 applyPreset(currentScene);
+ready = prepare();
 
 const clock = new THREE.Clock();
 let t = 0, frames = 0, acc = 0, slow = 0, paused = false;
 function frame() {
   requestAnimationFrame(frame);
   const dt = Math.min(clock.getDelta(), 0.1);
-  if (paused) return;   // e.g. the gallery's species grid covers the stage
+  if (paused || compiling) return;   // the gallery's species grid covers the stage, or the fade does
   t += dt;
   origin.z += preset.speed * dt;
   controls.update(dt);

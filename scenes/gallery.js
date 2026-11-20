@@ -57,7 +57,7 @@ function setScene(b) {
   $('plain').setAttribute('aria-pressed', String(b === 'none'));
   const S = window.__scenes; if (!S) return;
   const k = nightNow() && S.PRESETS[b + '_night'] ? b + '_night' : b;
-  if (S.scene === k) $('fade').style.opacity = 0; else S.switchScene(k);
+  S.switchScene(k);   // the current scene: only lifts the fade, once ready
   stage.classList.toggle('plain', !!S.PRESETS[k].plain);
 }
 // share of this track's flight distance over the habitats of a scene that was flown at night

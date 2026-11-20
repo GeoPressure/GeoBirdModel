@@ -256,7 +256,6 @@ void main(){
 `;
 
 export const TERRAIN_FS = NOISE + SKY + HABITATS + /* glsl */ `
-uniform vec4 uInner; // xz centre, half size, enabled
 uniform float uSpacing;
 uniform float uWater;
 uniform float uCloudH; uniform float uCloudCov; uniform float uCloudScale; uniform vec2 uWind; uniform float uCloudShadow;
@@ -315,7 +314,6 @@ float bldg(vec2 p, float ang, vec2 cs, float dens, float fw, out float hb){
 }
 
 void main(){
-  if(uInner.w > 0.5){ vec2 q = abs(vWorld.xz - uInner.xy); if(max(q.x,q.y) < uInner.z - uSpacing) discard; }
   vec2 p = vWorld.xz;
   vec3 V = vWorld - uCam; float dist = length(V); vec3 vd = V/dist;
   float fw = max(length(fwidth(p)), 0.5);

@@ -4,16 +4,19 @@
 // double click, buttons) and pan (drag). A click on a place, a landmark, a point of the track or a
 // habitat area calls onPick({ kind, scene, ... }); highlight(scene) brings out the habitats of that
 // scene and fades the others (cross-fade). Plain 2D canvas: no WebGL context.
+// The raster is decoded, indexed by habitat and faded in a worker (habitat-worker.js), so the main thread
+// stays free while the page loads; ready resolves with the JSON indexes, before the raster.
 
 const hex = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
 const FADE_MS = 380;
+const KEEP_FADED = 4;   // faded rasters kept (each is 3600 x 1800 px, 26 MB)
 
 export class HabitatMap {
   constructor(canvas, { base = 'habitats/', onPick = () => {} } = {}) {
     this.cv = canvas; this.base = base; this.onPick = onPick;
     this.sp = null; this.sel = null; this.view = null; this.fit = null;
     this.pad = { top: 0, bottom: 0 };   // px kept free above and below the track (floating panels)
-    this.hl = null; this.hlFrom = null; this.hlT = 1; this.faded = new Map(); this.ripples = [];
+    this.hl = null; this.hlFrom = null; this.hlT = 1; this.want = null; this.faded = new Map(); this.fading = new Map(); this.ripples = [];
     // tooltip: the habitat or place under the cursor
     this.tip = document.createElement('div'); this.tip.className = 'tip'; this.tip.setAttribute('aria-hidden', 'true');
     canvas.parentElement.appendChild(this.tip);
@@ -23,16 +26,39 @@ export class HabitatMap {
   }
 
   async load() {
-    const [index, img, places] = await Promise.all([
+    const [index, places] = await Promise.all([
       fetch(this.base + 'geo/index.json').then((r) => r.json()),
-      new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = this.base + 'habitats.png'; }),
       fetch(this.base + 'places.json').then((r) => r.json()).catch(() => ({})),
     ]);
-    this.index = index; this.img = img; this.places = places;
+    this.index = index; this.places = places;
+    this.indexed = this.loadRaster();
+    this.indexed.catch((e) => console.error(e));
+  }
+  // the raster (this.img) and the habitat index of every pixel (this.idx)
+  loadRaster() {
+    const url = new URL(this.base + 'habitats.png', location.href).href, colours = this.index.habitats.map((h) => h.colour);
+    let w = null;
+    try { if (typeof OffscreenCanvas !== 'undefined') w = new Worker(new URL('./habitat-worker.js', import.meta.url)); } catch (e) { w = null; }
+    if (!w) return this.loadRasterHere(url, colours);
+    this.worker = w;
+    return new Promise((res, rej) => {
+      w.onerror = (e) => { e.preventDefault?.(); this.worker = null; w.terminate(); this.loadRasterHere(url, colours).then(res, rej); };
+      w.onmessage = ({ data: m }) => {
+        if (m.type === 'image') { this.img = m.bitmap; this.refit(false); this.draw(); }
+        else if (m.type === 'index') { this.idx = m.idx; res(); }
+        else if (m.type === 'faded') this.fading.get(m.scene)?.res(m.bitmap);
+      };
+      w.postMessage({ type: 'load', url, colours });
+    });
+  }
+  // without a worker (no OffscreenCanvas): the same, on the main thread
+  async loadRasterHere(url, colours) {
+    const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = url; });
+    this.img = img; this.refit(false); this.draw();
     const c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
     const g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(img, 0, 0);
     this.pixData = g.getImageData(0, 0, img.width, img.height);
-    const P = this.pixData.data, rgb = index.habitats.map((h) => hex(h.colour));
+    const P = this.pixData.data, rgb = colours.map(hex);
     // habitat index of every pixel (255: none), colours matched once per distinct colour
     const cache = new Map(), idx = new Uint8Array(img.width * img.height);
     for (let i = 0, o = 0; i < idx.length; i++, o += 4) {
@@ -71,32 +97,54 @@ export class HabitatMap {
   select(sel) { this.sel = sel; this.draw(); }
 
   // ---------------------------------------------------------------- habitat highlight
+  // the cross-fade starts once the faded raster of the new scene is ready (made in the worker)
   highlight(scene) {
+    this.want = scene;
     if (scene === this.hl) return;
-    this.hlFrom = this.hl; this.hl = scene; this.hlT = 0;
-    const t0 = performance.now();
-    const step = (t) => { this.hlT = Math.min(1, (t - t0) / FADE_MS); this.draw(); if (this.hlT < 1) requestAnimationFrame(step); };
-    requestAnimationFrame(step);
+    this.fadedReady(scene).then(() => {
+      if (this.want !== scene || scene === this.hl) return;
+      this.hlFrom = this.hl; this.hl = scene; this.hlT = 0;
+      const t0 = performance.now();
+      const step = (t) => { this.hlT = Math.min(1, (t - t0) / FADE_MS); this.draw(); if (this.hlT < 1) requestAnimationFrame(step); };
+      requestAnimationFrame(step);
+    }).catch(() => {});
   }
-  // the habitat raster with every habitat but those of `scene` faded, cached per scene
-  fadedImage(scene) {
-    if (!scene || !this.idx) return this.img;
-    const key = scene;
-    if (this.faded.has(key)) return this.faded.get(key);
+  // the habitat raster with every habitat but those of `scene` faded (a few kept), or the raster itself
+  fadedImage(scene) { return (scene && this.faded.get(scene)) || this.img; }
+  async fadedReady(scene) {
+    if (!scene) return;
+    await this.ready; await this.indexed;
+    if (this.faded.has(scene)) return;
     const on = this.index.habitats.map((h) => h.scene === scene);
-    if (!on.some(Boolean)) return this.img;
-    const src = this.pixData.data, out = new ImageData(this.img.width, this.img.height), D = out.data;
-    const bg = [246, 244, 238], k = 0.68;
-    for (let i = 0, o = 0; i < this.idx.length; i++, o += 4) {
-      const v = this.idx[i];
-      if (v !== 255 && on[v]) { D[o] = src[o]; D[o + 1] = src[o + 1]; D[o + 2] = src[o + 2]; }
-      else { D[o] = src[o] + (bg[0] - src[o]) * k; D[o + 1] = src[o + 1] + (bg[1] - src[o + 1]) * k; D[o + 2] = src[o + 2] + (bg[2] - src[o + 2]) * k; }
-      D[o + 3] = 255;
+    if (!on.some(Boolean)) return;
+    let img;
+    if (this.worker) {
+      if (!this.fading.has(scene)) {   // one request per scene; { p: its promise, res: resolved by onmessage }
+        const f = {}; f.p = new Promise((res) => { f.res = res; });
+        this.fading.set(scene, f);
+        this.worker.postMessage({ type: 'fade', scene, on });
+      }
+      img = await this.fading.get(scene).p;
+      this.fading.delete(scene);
+      if (this.faded.has(scene)) return;
+    } else {
+      const src = this.pixData.data, out = new ImageData(this.img.width, this.img.height), D = out.data;
+      const bg = [246, 244, 238], k = 0.68;
+      for (let i = 0, o = 0; i < this.idx.length; i++, o += 4) {
+        const v = this.idx[i];
+        if (v !== 255 && on[v]) { D[o] = src[o]; D[o + 1] = src[o + 1]; D[o + 2] = src[o + 2]; }
+        else { D[o] = src[o] + (bg[0] - src[o]) * k; D[o + 1] = src[o + 1] + (bg[1] - src[o + 1]) * k; D[o + 2] = src[o + 2] + (bg[2] - src[o + 2]) * k; }
+        D[o + 3] = 255;
+      }
+      img = document.createElement('canvas'); img.width = this.img.width; img.height = this.img.height;
+      img.getContext('2d').putImageData(out, 0, 0);
     }
-    const c = document.createElement('canvas'); c.width = this.img.width; c.height = this.img.height;
-    c.getContext('2d').putImageData(out, 0, 0);
-    this.faded.set(key, c);
-    return c;
+    this.faded.set(scene, img);
+    // keep a few: drop the oldest that is not on screen
+    for (const key of this.faded.keys()) {
+      if (this.faded.size <= KEEP_FADED) break;
+      if (key !== this.hl && key !== this.hlFrom && key !== this.want && key !== scene) { this.faded.get(key).close?.(); this.faded.delete(key); }
+    }
   }
 
   // ---------------------------------------------------------------- view
