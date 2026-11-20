@@ -13,7 +13,7 @@ magick -size "$wh" -define gradient:direction=SouthEast gradient:'#0ea5e9-#f59e0
   -alpha off -compose CopyOpacity -composite assets/logo.png
 magick assets/logo.png -resize 256x -quality 90 -define webp:alpha-quality=95 assets/logo.webp
 magick -size 512x512 xc:'#0f172a' -alpha set \( -size 512x512 xc:none -fill white -draw "circle 256,256 256,4" \) -compose DstIn -composite \
-  \( "$tmp/bird.png" -alpha extract -background white -alpha shape -resize 330x330 \) -compose over -gravity center -composite "$tmp/badge.png"
+  \( "$tmp/bird.png" -alpha extract -background white -alpha shape -resize 400x400 \) -compose over -gravity center -composite "$tmp/badge.png"
 magick "$tmp/badge.png" -resize 180x180 assets/favicon-180.png
 magick "$tmp/badge.png" -resize 32x32 assets/favicon-32.png
 magick "$tmp/badge.png" -define icon:auto-resize=48,32,16 assets/favicon.ico
