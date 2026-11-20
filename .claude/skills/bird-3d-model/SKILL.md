@@ -1,89 +1,103 @@
 ---
 name: bird-3d-model
-description: Make, fix, review, publish or release the 3D bird models of GeoPressure/bird-models used in GeoLocator Explorer's bird view (one per species, from huashu-bird-sticker illustrations via Meshy and Blender). Use when asked to make the next bird, redo a bird marked rerun, improve the flight animation (wing beat, belly, head), change model settings, update the gallery or quality status, release a version for the Explorer, check credits, or update the species list.
+description: Make, fix, review, publish or release the 3D bird models of GeoPressure/GeoBirdModel used in GeoLocator Explorer's bird view (one per species, from huashu-bird-sticker illustrations via Meshy and Blender). Use when asked to make the next bird, redo a bird marked rerun, improve the flight animation (wing beat, belly, head), change model settings, update the gallery or quality status, release a version for the Explorer, check credits, or update the species list.
 ---
 
 # Bird 3D models
 
-Repository GeoPressure/bird-models. Background and history: `METHOD.md`, `LESSONS.md` (keep it
-current: every surprise, test or changed default gets a dated line). This file is the procedure:
-follow it exactly, it already contains the lessons.
+Repository GeoPressure/GeoBirdModel. This file is the procedure: follow it exactly. Why the
+defaults are what they are, and the known defects with their fix: `LESSONS.md` (read the
+"Defects and their fix" tables before a batch; add a dated row for every new surprise, in the
+right table). Files and commands: `METHOD.md`.
 
-## One bird at a time
-Make **one** species, show it to the user in the local gallery, record their verdict in
-`status.csv` (`quality`: good / ok / rerun, with `quality_notes`), and only then start the next.
-Never batch new species unless the user asks.
+## One bird at a time, unless the user asks for a batch
+Default: make **one** species, show it to the user in the local gallery, record their verdict in
+`status.csv` (`quality`: good / ok / rerun, with `quality_notes`), then start the next.
 
-## Pipeline (v4, 48 credits)
+When the user asks for a batch (e.g. "use all the credits"):
+- Run species in parallel: paid steps at most ~8 at once (Meshy refuses more than ~10 pending
+  tasks), Blender rigs at most 3 at once. zsh arrays (`L=(a b c)`), `set -o pipefail`.
+- Still check every image, view and review yourself before the next paid step.
+- At most **one redo per paid step per species** for a defect you saw; then move on and report.
+- Publish each bird with quality `pending`; never set good / ok / rerun.
+- Report credits before and after, and the list of birds with gallery links.
+
+## Pipeline (v4 + GPT Image 2.5, 54 credits)
 All commands from the repo root: `python3 -I tools/make_bird.py <step> "Genus species"`.
 
 1. **Pick**: `python3 -I tools/species.py --todo` (from the latest Master GeoLocator Data Package
-   on Zenodo; never edit `species.csv`). Reruns: species with `quality` = rerun.
-2. **Notes**: add or fix the row in `prompts/species_notes.csv` (flight plumage, underside, flight
-   style). Download and **look at the sticker first** (`work/<Genus_species>/sticker.webp`): the
-   notes must describe the sticker's plumage, not a field guide from memory.
-3. **`image`** (9): flight image, 1024 px. Check next to the sticker: same plumage and colours,
-   wings spread, seen from above and behind, whole bird, white background. Wrong → `image` again.
-4. **`views`** (9): one underside view, 1024 px, from the flight image. Check `views.png`, zoomed
-   on the belly and vent: **no feet, toes, claws or dark marks**. Wrong → `views` again.
-   Never edit, crop or rescale it by hand.
-5. **`model`** (20): untextured shape from the **flight image first + the underside view**
-   (multi-image-to-3d). Flight image first makes the orientation predictable (head -Y, back +Z,
-   like single-image models); the underside view stops Meshy from inventing legs. Do not add top or
-   side views: views that disagree on the eye position give a bird with two eyes per side.
-6. **`texture`** (10): colours from the same two images (retexture of the shape).
-7. **`orient`** (free, required): Meshy's orientation is not predictable (flight image first
-   usually gives head -Y, back +Z, but not always). `orient` measures it and `rig` uses it. With a
-   colour margin < 1.5× look at `orient_*.png`; in any case confirm in the review that the bird
-   flies away from the camera in the bird-view row.
-8. **`rig`**: flapping (20 000 faces, skeleton, wing beat, steady head) and static (100 000
-   faces). Read every printed line (`CHECK WARNING` → stop). Then **look at all three sheets**:
-   - `preview.png`, rows: bird view (tail nearest, flying away), **head-on** (the whole wing hinges
-     at the shoulder, nothing else moves; the rig prints the wings' rest angle), side (belly
-     steady, no legs, the downstroke does not cover the belly), below (clean belly);
-   - `head.png`: **exactly one eye per side**, crown and face as in the flight image, bill intact;
-   - `closeup.png`: no cracks, stumps or smears;
-   - the **downstroke** (wings at their lowest) from the side and front-below: the flank under the
-     wing root stays closed (no notch, dent or hole).
-   `review.png` combines preview and head: open it at full size and check every row before
-   showing the bird; in the side row also check the belly stays still (only wings move).
-   `rig` measures it too (`tools/deform.py`): `CHECK body steady (x)` must be below 0.005
-   half-span; `CHECK WARNING body moves` → stop and fix the rig. **Any change to the rig** (an
-   option, a new correction) means re-running `rig` and reading this line and the side row
-   again before showing the bird: the levelling added for one bird broke its belly.
-   **Per-species rig options** go in `prompts/species_notes.csv`, column `rig_args`, never in a
-   new default. Before changing a default for all birds, render the old and new rig side by side
-   on two or three birds and show them.
-9. **`options`** (free, ~10 min in the background): `make_bird.py options "Genus species"` builds
-   every belly x wing-beat combination (B0 as generated, B1-B3 10/20/30% slimmer; W0 as
-   generated, W1 half levelled, W2 levelled, W3 half levelled with a smaller beat; Bc/Wc the
-   previous choice) in `work/<sp>/options/`. The user picks in the **picker**,
-   `http://localhost:8091/tools/picker.html#Genus_species` (◀ ▶ per setting, speed, side /
-   head-on / behind / below views; keys ← → ↑ ↓). **The user picks** (e.g. "B0 W1"), never me:
-   body shape is a matter of taste per species (the kingfisher is pot-bellied; slimming it
-   looked wrong). Save with `make_bird.py choose "Genus species" B0 W1`, then `rig` and `publish`.
-10. **`publish`**: copies flapping, static, flight image and poster, rebuilds `models.json`. Set
-   `status.csv`: status done, method, credits (`make_bird.py credits`), quality `pending`
-   (only the user sets good / ok / rerun). Open the local gallery
-   (`http://localhost:8090/?internal#Genus_species`: `?internal` shows status, notes, missing and planned species; without it the page is the public gallery, which must stay free of internal terms such as tier, method or version) for the user's check. Posters are rendered by `tools/render_poster.py` (field-guide three-quarter view, auto-framed).
-11. **Quality gate**: `site` writes `models.json` (what the Explorer loads) with only the birds
-   the user marked **good** or **ok**; `gallery.json` (the gallery) has every bird with its badge.
-   Pending and rerun birds never reach the Explorer; it shows the generic bird for them.
+   on Zenodo; never edit `species.csv`). Reruns: species with `quality` = rerun. If the sticker
+   download fails on jsDelivr (403), fetch it from `raw.githubusercontent.com` (same path).
+2. **Notes**: add or fix the row in `prompts/species_notes.csv` (`flight_features`, `underside`,
+   `flight_style`, `rig_args`). **Look at the sticker first** (`work/<Genus_species>/sticker.webp`):
+   the notes describe the sticker's plumage, not a field guide from memory. Ask for a smooth
+   crown if the sticker shows a raised crest, and one clear eye if the face has bold stripes.
+   A remake starts with empty `rig_args` (old fixes were for the old shape).
+3. **`image`** (12, `gpt-image-2-5-sunburst`): flight image, 1024 px. Check next to the sticker:
+   same plumage, wings spread, seen from above and behind, whole bird, straight body and tail,
+   one clear eye. Wrong → `image` again.
+4. **`views`** (12): one underside view from the flight image + sticker. Check it zoomed on belly
+   and vent: **underside colours of the notes (not the back), no feet, toes or claws**. Feet or a
+   face looking at the viewer → `views --nosticker`. A dark background (vignette) is harmless:
+   don't redo for it. Never edit, crop or rescale a view by hand.
+5. **`model`** (20, `--new` to pay for a fresh shape): untextured shape from the **flight image
+   first + the underside view**. Never add top or side views (two eyes per side).
+6. **`texture`** (10, `--new` likewise): colours from the same two images.
+   Both steps log the task as `pending` on submit and resume it if waiting or downloading fails
+   (also after a transient 401): rerun **without** `--new`.
+7. **`orient`** (free, required): measures where head and back point; `rig` uses it. With a
+   colour margin < 1.5x look at `orient_*.png`. In every case confirm in the review that the bird
+   flies away from the camera, back up. If not, append a manual entry to `work/<sp>/log.jsonl`
+   (`{"step": "orient", "forward": "-Y", "up": "+Z", "manual": true}` with the right axes) and
+   rig again.
+8. **`rig`** (free): flapping (20 000 faces, skeleton, wing beat, head rigid with the body) and
+   static (100 000 faces). Read every printed line; `CHECK WARNING` → stop. Then open
+   `review.png` at full size and check every row:
+   - bird view: tail nearest, flying away, back up, wings symmetric;
+   - head-on: the whole wing hinges at the shoulder; rest angle printed (steeply raised wings →
+     note it for the picker);
+   - side: belly steady, **no legs or stubs**, the downstroke does not open the flank;
+   - below: clean belly;
+   - head left/right/top/front (`h_*.png`): **exactly one eye per side**, no eye on the crown, bill
+     centred and intact, crown as in the flight image.
+   `CHECK body steady (x)` must be below 0.005 half-span.
+
+   Free fixes go in the species' `rig_args`, then `rig` again and re-check: legs →
+   `--legs=delete` (if it cuts the tail or undertail, back to keep and pay for a new shape);
+   painted dark spots → `--cleanbelly=1`. Paid fixes (`LESSONS.md` tables): new shape
+   (`model --new` + `texture --new`, 30) for two eyes, turned head, bad bill, a body that moves;
+   new image first when the defect is in the flight image.
+   **Never change a rig default** without rendering old and new side by side on two or three
+   birds and showing the user.
+9. **`publish`**: copies flapping, static, flight image and poster; rebuilds `models.json`. Set
+   `status.csv`: status done, method, credits (`make_bird.py credits`), quality `pending`, a note
+   on redos and fixes. Show the user `http://localhost:8090/?internal#Genus_species` (`?internal`
+   shows status and notes; the public page must stay free of internal terms such as tier, method
+   or version).
+10. **`options`** (free, ~10 min, background): every belly x wing-beat combination in
+    `work/<sp>/options/`; the user picks in `http://localhost:8091/tools/picker.html#Genus_species`
+    (e.g. "B0 W1"), never me. Save with `make_bird.py choose "Genus species" B0 W1`, then `rig`
+    and `publish`.
+11. **Quality gate**: `make_bird.py site all` writes `models.json` (what the Explorer loads) with
+    only good and ok birds, and `gallery.json` with every bird and its badge.
 12. **Release** (only when the user asks): commit, tag `vX.Y.Z`, `gh release create`, push; then
-   bump `BIRD_MODELS_BASE` in GeoLocatorExplorer `src/pages/Tag.vue` and check the bird view.
+    bump `BIRD_MODELS_BASE` in GeoLocatorExplorer `src/pages/Tag.vue` and check the bird view.
 
 ## What costs credits
-Paid (Meshy): `image` 9, `views` 9, `model` 20, `texture` 10, and any redo of them. Free (local
-Blender, from `raw/`): `orient`, `rig`, `publish`, gallery; i.e. wing beat, belly, head motion,
-joints, levelling, centring, size, proportions, file size. A rig defect is fixed once and all
-birds are rebuilt for free; pay only when the shape or texture itself is wrong (legs fused or
-painted, two eyes, wrong pattern): redo `views` + `model` + `texture` (39) with the same flight image.
+Paid (Meshy): `image` 12, `views` 12, `model` 20, `texture` 10, and every redo. A new shape from
+the same images is 30, view + shape 42, a whole bird 54. Free (local Blender, from `raw/`):
+`orient`, `rig`, `options`, `publish`, `site`: wing beat, belly, legs, levelling, size, file size.
+Never pay for a redo without a defect you saw yourself. Check
+`npm exec --yes --package=meshy-cli@0.4.0 -- meshy balance --output-schema v1 --format json --no-update-check`
+before and after.
 
 ## Rules
-- Report credits (`meshy balance`) before and after; ask before spending beyond the user's plan.
-- A defect the user reports is fixed in the tools for every bird (rig defects: rebuild all with
-  `rig` + `publish`, no credits) and added to the problem table in `LESSONS.md`.
+- A defect the user reports is fixed in the tools for every bird when it is a rig defect
+  (rebuild all with `rig` + `publish`, free), and added to `LESSONS.md`.
 - Files are standard glTF: back +Y, head +Z, origin at the centre of the body.
 - Credit the stickers: CC BY 4.0, huashu-bird-sticker (Huashu).
-- The free Meshy plan cannot create tasks through the API (Pro needed). Retexture and
-  multi-image tasks made in the Meshy web app are not visible to the API.
+- Meshy needs the Pro plan for API tasks. Agent credits (Meshy web Agent chat) can make a step
+  by hand; its tasks download with the CLI (see `LESSONS.md`).
+- Keep the repo tidy: scratch files go in `work/_scratch/`. `model`/`texture` rename the previous
+  raw GLB to `__old<time>`; once the new bird is published and checked, the old ones can go (ask
+  the user before deleting).

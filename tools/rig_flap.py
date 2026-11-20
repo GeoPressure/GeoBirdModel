@@ -12,8 +12,9 @@
 #   --faces [20000]     decimate to this many triangles after welding UV seams (0 = keep)
 #   --tex [2048]        base-colour texture size   --normal [1024] normal map size (0 = drop)
 #   --imgfmt [WEBP]     texture format in the GLB (WEBP or JPEG), --q [85] quality
-#   --legs [delete]     delete | fold | keep : remove the legs below the belly line (Meshy adds
-#                       them even when the image has none); never touches head/bill or tail
+#   --legs [delete]     delete | keep : remove thin legs found by thickness under the body
+#                       (fold is the same as delete); make_bird.py passes keep for v4 models,
+#                       set --legs=delete in the species' rig_args when the review shows legs
 #   --static [0]       1 = export the levelled Meshy model as made (legs kept, no rig); use
 #                       with --faces=100000 for the gallery's static model
 #   --belly [0.30]      max body depth/length; plumper bodies are slimmed below the mid-line
@@ -22,8 +23,10 @@
 #   --sweep [12]        wing-tip sweep back on the upstroke (deg)
 #   --bob [0.006]       body rise on the downstroke (fraction of wingspan x2)
 #   --pitch [1.5]         body pitch with the beat (deg)
-#   --head [stable]     stable : head counter-moves so it stays still while the body bobs
-#                       follow : head moves with the body
+#   --head [rigid]      rigid : head moves with the body (default since 2026-11-20)
+#                       stable : head counter-moves so it stays still while the body bobs
+#   --smoothhead [0]    N smoothing passes on the crown and nape (thin spikes)
+#   --cleanbelly [0]    1 = repaint dark spots on the belly texture with the surrounding colour
 #   --frames [24] --fps [24]   loop length (1 s)
 #   --shoulder [0.18] --elbow [0.55]   joint positions as fractions of the half-span
 import bpy, sys, math
@@ -286,6 +289,24 @@ if _sv > 0:
     bpy.ops.object.modifier_apply(modifier=mod.name)
     bird.vertex_groups.remove(bird.vertex_groups["_vent"])
     print(f"CHECK smoothed the lower body and vent ({_sv} passes)")
+# --smoothhead=N: N passes of smoothing on the crown and nape (top of the head, behind the bill),
+#   removing hair-like spikes Meshy sometimes builds there (Great Reed Warbler, 2026-11-20).
+_sh = int(num("smoothhead", 0))
+if _sh > 0:
+    _hy = max(v.co.y for v in bird.data.vertices if abs(v.co.x) < 0.12 * half)   # bill tip
+    _hv = [v for v in bird.data.vertices if abs(v.co.x) < 0.2 * half and v.co.y > 0.1 * _hy]
+    _zc = sorted(v.co.z for v in _hv)[len(_hv) // 2] if _hv else 0.0
+    vg = bird.vertex_groups.new(name="_head")
+    for v in bird.data.vertices:
+        w = (smooth((v.co.y - 0.1 * _hy) / (0.1 * _hy)) * (1 - smooth((v.co.y - 0.8 * _hy) / (0.08 * _hy)))
+             * smooth((v.co.z - _zc) / (0.03 * half)) * (1 - smooth((abs(v.co.x) - 0.15 * half) / (0.05 * half))))
+        if w > 1e-3: vg.add([v.index], w, "REPLACE")
+    mod = bird.modifiers.new("_hs", "LAPLACIANSMOOTH")
+    mod.vertex_group = vg.name; mod.iterations = _sh; mod.lambda_factor = 1.0; mod.use_volume_preserve = False
+    bpy.context.view_layer.objects.active = bird
+    bpy.ops.object.modifier_apply(modifier=mod.name)
+    bird.vertex_groups.remove(bird.vertex_groups["_head"])
+    print(f"CHECK smoothed the crown and nape ({_sh} passes)")
 if opt.get("cleanbelly", "0") == "1":
     import numpy as np
     me = bird.data; uvl = me.uv_layers.active.data
@@ -524,7 +545,7 @@ if abs(bias) > 0.5:
 # head bone cancels both so the head stays still, as birds stabilise their gaze in flight.
 sc.render.fps = fps; sc.frame_start = 1; sc.frame_end = nfr
 act = bpy.data.actions.new("Fly"); arm.animation_data_create(); arm.animation_data.action = act
-stable = opt.get("head", "stable") == "stable"
+stable = opt.get("head", "rigid") == "stable"  # default rigid: the stabilised head split the head mid-way and bent long bills (user, 2026-11-20)
 for f in range(1, nfr + 2):
     ph = 2 * math.pi * (f - 1) / nfr
     a_in = math.radians(amp) * math.sin(ph) + math.radians(bias)

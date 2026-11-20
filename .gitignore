@@ -3,3 +3,5 @@ __pycache__/
 # full-quality Meshy models (archived on Zenodo) and per-species working files
 raw/
 work/
+# vite dev-server cache
+.vite/

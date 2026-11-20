@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Make a flapping 3D bird for GeoLocator Explorer, one step at a time (run from the repo root).
 
-  python3 -I tools/make_bird.py image "Oenanthe oenanthe" [--ref photo.jpg] [--model nano-banana-pro]
+  python3 -I tools/make_bird.py image "Oenanthe oenanthe" [--ref photo.jpg] [--model gpt-image-2-5-sunburst (default) | nano-banana-pro]
       sticker -> in-flight image (Meshy image-to-image). Check work/<Genus_species>/flight.png before going on.
-  python3 -I tools/make_bird.py views "Oenanthe oenanthe"
+  python3 -I tools/make_bird.py views "Oenanthe oenanthe" [--nosticker]
       flight image -> underside view (1024 px), no legs or feet. Check work/<Genus_species>/views.png.
   python3 -I tools/make_bird.py model "Oenanthe oenanthe" [--single [--from IMAGE_TASK_ID] [--type smart]]
       flight image + underside view -> untextured shape (Meshy multi-image-to-3d)
@@ -112,7 +112,7 @@ def step_image(sp, args):
     refs = [str(sticker)] + ([str(Path(opt(args, "--ref")).resolve())] if "--ref" in args else [])
     if len(refs) > 1:
         prompt += " The first image is the species illustration to redraw; the second is a real photo of the species in flight, use it for the wing and tail pattern and the flight posture."
-    model = opt(args, "--model", "nano-banana-pro")
+    model = opt(args, "--model", "gpt-image-2-5-sunburst")
     sub = meshy("image-to-image", "create", "--ai-model", model, "--prompt", prompt,
                 "--reference-image-urls", ",".join(refs), "--async")
     tid = sub["submission"]["task_id"]
@@ -214,14 +214,18 @@ def step_views(sp, args):
         under = name == "underside"
         plum = (f" The underside plumage is: {note['underside']}; it is NOT the colour of the back."
                 if under and note.get("underside") else "")
-        refs = [d / "flight.png"] + ([d / "sticker.webp"] if under and (d / "sticker.webp").exists() else [])
+        # --nosticker: notes text only (the Song Thrush sticker, a standing bird with long pink legs,
+        # made Meshy draw tucked feet twice)
+        use_st = under and (d / "sticker.webp").exists() and "--nosticker" not in args
+        refs = [d / "flight.png"] + ([d / "sticker.webp"] if use_st else [])
         prompt = (f"Redraw this exact {row['english_name']} ({sp}) in flight, {view}.{plum} Gliding with both wings "
                   "fully spread and held straight out level with the body, tail slightly fanned. Keep the same "
                   "bird, proportions and realistic illustration style"
-                  + (" (the first image shows its back, the second its breast and belly)" if under else "")
-                  + ". Whole bird in frame, centred, filling most of the image. Plain pure white background, "
+                  + (" (the first image shows its back, the second its breast and belly)" if use_st else "")
+                  + (". The legs and feet are fully retracted and hidden in the belly feathers, not visible at all" if under else "")
+                  + ". Whole bird in frame, centred, filling most of the image. Plain pure white background (#FFFFFF), no vignette, no gradient, "
                   "no shadow, no text.")
-        sub = meshy("image-to-image", "create", "--ai-model", "nano-banana-pro", "--prompt", prompt,
+        sub = meshy("image-to-image", "create", "--ai-model", opt(args, "--model", "gpt-image-2-5-sunburst"), "--prompt", prompt,
                     "--reference-image-urls", ",".join(str(r) for r in refs), "--async")
         tid = sub["submission"]["task_id"]
         meshy("image-to-image", "wait", tid, "--timeout", "600")
@@ -332,9 +336,10 @@ def rig_inputs(sp, args, rig_args=None):
     if m and m.get("type") == "views":
         # multi-view models have no legs to remove; orientation from `orient` (or as logged)
         fwd_up = [o["forward"], o["up"]] if o else m.get("orientation", "-Y,+Z").split(",")
-        # legs: deleted by default for new birds too (5 of 10 v4 models still grew legs, 2026-11-20);
-        # birds published before that keep theirs as approved (--legs=keep in their rig_args)
-        style_args = style_args + [f"--forward={fwd_up[0]}", f"--up={fwd_up[1]}"]
+        # legs kept by default: on leg-free shapes the leg search cut the thin undertail (Tree Pipit,
+        # Savi's Warbler, Horned Lark). When the review shows legs (5 of 10 tier-2 shapes had some),
+        # set --legs=delete in the species' rig_args (prompts/species_notes.csv). 2026-11-20
+        style_args = style_args + [f"--forward={fwd_up[0]}", f"--up={fwd_up[1]}", "--legs=keep"]
     elif o:
         style_args = style_args + [f"--forward={o['forward']}", f"--up={o['up']}"]
     return d, name, variant, src, out, style_args, extra
@@ -349,7 +354,7 @@ def step_rig(sp, args):
     for line in r.stdout.splitlines():
         if line.startswith(("CHECK", "legs", "levelled", "faces", "welded", "wings levelled", "body half-width")):
             print("  " + line)
-    # Body deformation over the wing beat (only wings and the stabilised head may move)
+    # Body deformation over the wing beat (only the wings may move)
     r = subprocess.run(["blender", "-b", "--python", str(HERE / "tools/deform.py"), "--", str(out)],
                        check=True, capture_output=True, text=True)
     body = [float(l.split()[1]) for l in r.stdout.splitlines() if l.startswith("BODY")]
@@ -530,7 +535,7 @@ def step_site(_sp, _args):
             "notes": st.get("notes", ""),
             "updated": time.strftime("%Y-%m-%d", time.localtime((HERE / "models" / f"{name}.glb").stat().st_mtime)),
             "license": "CC-BY-4.0",
-            "attribution": "GeoPressure bird-models (Raphaël Nussbaumer), from huashu-bird-sticker illustrations by Huashu (CC BY 4.0)",
+            "attribution": "GeoBirdModel (Raphaël Nussbaumer), from huashu-bird-sticker illustrations by Huashu (CC BY 4.0)",
         })
         birds.append(entry)
     birds.sort(key=lambda e: e["scientific_name"])
@@ -543,18 +548,40 @@ def step_site(_sp, _args):
     missing = [{"scientific_name": sp, "english_name": r.get("english_name", ""), "quality": "missing",
                 "quality_notes": "no model yet" + (f"; {r['notes']}" if r.get("notes") else ""), "sticker": r.get("sticker", ""), "tier": r.get("tier", ""),
                 "n_tags": r.get("n_tags", ""), "tag_id": r.get("tag_id", "")} for sp, r in species.items() if sp not in have]
+    # Taxonomy for applications (fallback to a relative when a species has no model): order and
+    # family from the huashu sticker path (stickers/<Order>/<Family>/<Genus_species>.webp), genus from
+    # the name, and the sticker's own name as a synonym when it differs (genus changes).
+    def taxo(sp, sticker):
+        parts = (sticker or "").split("/stickers/")[-1].split("/") if "/stickers/" in (sticker or "") else []
+        order, family = (parts[0], parts[1]) if len(parts) >= 3 else ("", "")
+        syn = parts[-1].rsplit(".", 1)[0].replace("_", " ") if parts else ""
+        return {"genus": sp.split()[0], "family": family, "order": order,
+                "synonyms": [syn] if syn and syn != sp else []}
+    for e in birds + missing:
+        e.update(taxo(e["scientific_name"], e.get("sticker", "")))
     head = {
+        "schema": "bird-models/2",
+        "axes": {"up": "+Y", "forward": "+Z", "origin": "body centre", "units": "wingspan about 0.5"},
+        "animation": "Fly",
+        "resolver": "client/bird-models.js",
+        "fallback_order": ["species", "synonym", "genus", "family", "generic"],
         "description": "Flapping 3D bird models for GeoLocator Explorer's bird view (models/), with the static "
                        "model as generated (static/) and the in-flight source image (images/). glTF binary; "
                        "flapping models have one looping animation 'Fly'; standard glTF axes: back +Y, head +Z, "
                        "origin at the centre of the body.",
         "license": "CC-BY-4.0",
-        "source": "https://github.com/GeoPressure/bird-models",
+        "source": "https://github.com/GeoPressure/GeoBirdModel",
     }
     # Quality gate: the Explorer (models.json) only gets birds the user marked good or ok; the
     # gallery (gallery.json) shows every bird with its status. Other species keep the generic bird.
     released = [b for b in birds if b["quality"] in ("good", "ok")]
-    (HERE / "models.json").write_text(json.dumps({**head, "birds": released}, indent=1, ensure_ascii=False) + "\n")
+    # taxonomy of every other tracked or planned species (no released model): lets an application
+    # pick a relative (same genus, then same family) instead of the generic bird
+    rel = {b["scientific_name"] for b in released}
+    taxonomy = [{k: e[k] for k in ("scientific_name", "english_name", "genus", "family", "order", "synonyms")}
+                for e in birds + missing if e["scientific_name"] not in rel]
+    (HERE / "models.json").write_text(json.dumps({**head, "birds": released, "taxonomy": taxonomy},
+                                                 indent=1, ensure_ascii=False) + "\n")
     (HERE / "gallery.json").write_text(json.dumps({**head, "birds": birds + missing}, indent=1, ensure_ascii=False) + "\n")
     print(f"models.json: {len(released)} birds released (good/ok); gallery.json: {len(birds)} birds + {len(missing)} missing")
 

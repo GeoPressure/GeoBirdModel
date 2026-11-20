@@ -4,8 +4,8 @@ The bird models, posters and data in this repository are licensed under the Crea
 Attribution 4.0 International licence (CC BY 4.0). They are derived from the huashu-bird-sticker
 illustrations by Huashu (https://github.com/alchaincyf/huashu-bird-sticker), also CC BY 4.0.
 
-Credit: "Bird models: GeoPressure/bird-models (Raphaël Nussbaumer), from huashu-bird-sticker
-illustrations by Huashu, CC BY 4.0", with a link to https://github.com/GeoPressure/bird-models.
+Credit: "GeoBirdModel: GeoPressure/GeoBirdModel (Raphaël Nussbaumer), from huashu-bird-sticker
+illustrations by Huashu, CC BY 4.0", with a link to https://github.com/GeoPressure/GeoBirdModel.
 
 Copyright (c) 2026 Raphaël Nussbaumer, Swiss Ornithological Institute
 
