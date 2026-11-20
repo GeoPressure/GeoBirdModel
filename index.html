@@ -58,8 +58,6 @@ button { font: inherit; color: inherit; }
 .brand h1 i { font-weight: 400; }
 .brand .tag { font-size: 11.5px; color: var(--muted); white-space: nowrap; margin-top: 3px; }
 .top .sp { flex: 1; pointer-events: none; }
-.top .count { font-size: 12px; color: var(--muted); white-space: nowrap; display: none; }
-body.internal .top .count { display: inline; }
 /* scene time of day: Day / Night / Auto (follows the tracked bird) */
 .seg { display: inline-flex; padding: 2px; border-radius: 999px; background: var(--field); border: 1px solid var(--line); }
 .seg button { border: 0; background: transparent; border-radius: 999px; padding: 4px 10px; font-size: 12.5px; cursor: pointer; display: inline-flex; gap: 5px; align-items: center; color: var(--muted); }
@@ -67,7 +65,6 @@ body.internal .top .count { display: inline; }
 .seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
 .seg button:disabled { opacity: .45; cursor: default; }
 .xlink img { width: 20px; height: 20px; border-radius: 50%; background: #fff; padding: 1px; margin-left: -6px; }
-.nomodel #dl { display: none; }
 
 /* ---------------------------------------------------------------- overlays */
 .app { position: fixed; inset: 0; z-index: 10; pointer-events: none; }
@@ -78,9 +75,6 @@ body.internal .top .count { display: inline; }
 .stage.plain .label { color: var(--ink); text-shadow: none; }
 .label .en { font: 600 clamp(26px, 3.4vw, 44px)/1.08 var(--display); letter-spacing: -.01em; }
 .label .sci { font-style: italic; opacity: .88; font-size: 15px; }
-.label .q { vertical-align: 6px; margin-left: 6px; font-size: 10px !important; }
-.stage .msg { position: absolute; left: 50%; top: 46%; transform: translate(-50%, -50%); padding: 10px 16px; border-radius: 12px; font-size: 13px; display: none; text-align: center; }
-.stage.nomodel .msg { display: block; }
 #status { position: absolute; left: 50%; top: calc(var(--top-h) + 8px); transform: translateX(-50%); font-size: 12px; color: rgba(246,244,239,.9); text-shadow: 0 1px 3px rgba(0,0,0,.6); }
 .stage.plain #status { color: var(--muted); text-shadow: none; }
 
@@ -131,10 +125,6 @@ body.grid-open #mapopen { display: none; }
 .legend b { display: inline-block; width: 9px; height: 9px; vertical-align: -1px; margin-right: 4px; border: 1.5px solid #fff; }
 .legend .n { background: #22305a; }
 .side.notrack .mapinfo { display: none; }
-body.internal .side.notrack .mapinfo { display: flex; }
-body.internal .side.notrack .play, body.internal .side.notrack .legend { display: none; }
-.note { font-size: 12px; color: var(--muted); display: none; }
-body.internal .note { display: block; }
 
 /* ---------------------------------------------------------------- filmstrip / grid, bottom, full width */
 .strip { position: absolute; left: 0; right: 0; bottom: 0; height: var(--strip-h); display: flex; flex-direction: column;
@@ -156,10 +146,6 @@ input[type=search]:focus { outline: 2px solid var(--accent); outline-offset: 1px
 .nav { display: inline-flex; gap: 6px; align-items: center; }
 .nav .pill { padding: 4px 10px; }
 .strip.open .nav { visibility: hidden; }
-.filters { display: none; gap: 5px; flex-wrap: wrap; }
-body.internal .filters { display: flex; }
-.filters button { font-size: 11.5px; border: 1px solid var(--line); background: var(--tile); border-radius: 999px; padding: 2px 9px; cursor: pointer; }
-.filters button[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
 
 .tiles { flex: 1; min-height: 0; display: flex; gap: 8px; padding: 6px 16px 6px; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x proximity;
   scrollbar-width: thin; overscroll-behavior-x: contain; }
@@ -185,12 +171,6 @@ body.internal .filters { display: flex; }
 .tile.play img.poster { opacity: 0; }
 .tile .name { display: none; font-size: 11.5px; line-height: 1.25; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .strip.open .tile .name { display: block; white-space: normal; font-size: 12px; }
-.tile.missing img { opacity: .5; filter: grayscale(.5); }
-.q, .tier { display: none; }
-body.internal .q { display: inline-block; font-size: 9.5px; letter-spacing: .04em; text-transform: uppercase; padding: 0 5px; border-radius: 6px; color: #fff; text-shadow: none; font-style: normal; font-weight: 500; }
-body.internal .tile .q { position: absolute; top: 5px; left: 5px; z-index: 1; }
-body.internal .tile .tier { display: block; position: absolute; top: 5px; right: 7px; font-size: 10px; color: var(--muted); z-index: 1; }
-.q-good { background: #2e7d4f; } .q-ok { background: #b07a12; } .q-pending { background: #3b6fb6; } .q-rerun { background: #b33a3a; } .q-missing { background: #6b7280; }
 .empty { padding: 18px 16px; color: var(--muted); display: none; }
 
 /* about & sources */
@@ -260,7 +240,6 @@ dialog a { color: var(--accent); }
     <img src="assets/logo.webp" alt="">
     <span><h1>Geo<i>BirdModel</i></h1><div class="tag">3D models of tracked birds in flight</div></span>
   </a>
-  <span class="count" id="count"></span>
   <span class="sp"></span>
   <button class="icon" id="plain" aria-pressed="false" title="No background: the bird alone" aria-label="No background">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="14" rx="2"/><path d="M4 18 20 6"/></svg>
@@ -278,7 +257,6 @@ dialog a { color: var(--accent); }
 
 <main class="app">
   <section class="stage" id="stage">
-    <div class="msg glass" id="msg">No 3D model yet</div>
     <span id="status"></span>
     <div class="label">
       <div class="en" id="en"></div>
@@ -324,7 +302,6 @@ dialog a { color: var(--accent); }
         <span><b style="background:#e0565b"></b>breeding</span><span><b style="background:#2f8fd1;border-radius:50%"></b>wintering</span>
         <span><i class="n"></i>night flight</span><span><i style="background:#e08a1e"></i>day</span>
       </div>
-      <div class="note" id="note"></div>
     </div>
   </aside>
   <button id="mapopen" title="Open the migration map" aria-label="Open the migration map">
@@ -342,7 +319,6 @@ dialog a { color: var(--accent); }
         <span id="exlabel">All species</span>
       </button>
       <input type="search" id="search" placeholder="Search a species" aria-label="Search a species">
-      <div class="filters" id="filters"></div>
       <span class="sp"></span>
       <div class="nav">
         <button class="pill" id="prev" title="Previous species (←)" aria-label="Previous species"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"/></svg><span>Previous</span></button>

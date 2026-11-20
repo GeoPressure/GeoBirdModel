@@ -5,12 +5,9 @@
 // As flown sets the scene's light. The filmstrip (bottom, full width) holds all species grouped by family
 // and opens into a grid; hovering a species plays its flapping loop over its poster (loops/, boxes.json,
 // tools/flap_loops.sh). One WebGL context for the whole page; the page itself is light only.
-// ?internal adds status badges, notes, filters, and the species without a model.
 import { HabitatMap } from './habitat-map.js';
 
 const $ = (id) => document.getElementById(id);
-const internal = new URLSearchParams(location.search).has('internal');
-document.body.classList.toggle('internal', internal);
 const EXPLORER = 'https://geopressure.org/GeoLocatorExplorer/';
 const NO_TRACK_SCENE = 'kenya';
 const slug = (sci) => sci.replace(/ /g, '_');
@@ -19,7 +16,7 @@ const fmt = (x) => Math.round(x).toLocaleString('en').replace(/,/g, ' ');
 const km = (x) => `${fmt(x)} km`;
 const store = { get: (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} } };
 
-let birds = [], cur = null, filter = 'all', sp = null, base = null, lastScene = null, selTok = 0;
+let birds = [], cur = null, sp = null, base = null, lastScene = null, selTok = 0;
 const stage = $('stage'), tiles = $('tiles'), strip = $('strip');
 const phone = matchMedia('(max-width: 760px)');
 
@@ -173,14 +170,9 @@ async function select(b, { collapse = false } = {}) {
   if (!b) return;
   cur = b;
   const name = slug(b.scientific_name);
-  $('en').innerHTML = esc(b.english_name) + (internal ? `<span class="q q-${esc(b.quality)}">${esc(b.quality)}</span>` : '');
+  $('en').textContent = b.english_name;
   $('sci').textContent = b.scientific_name;
-  $('note').innerHTML = internal
-    ? [b.tier ? (b.tier === 'P' ? 'planned (GeoCollab)' : 'tier ' + b.tier) : '', b.quality_notes || '', b.notes || ''].filter(Boolean).map(esc).join(' · ')
-    : '';
-  document.body.classList.toggle('nomodel', !b.model);
-  stage.classList.toggle('nomodel', !b.model);
-  if (b.model) $('dl').href = b.model;
+  $('dl').href = b.model;
   tiles.querySelectorAll('.tile').forEach((t) => t.setAttribute('aria-current', String(t.dataset.sci === b.scientific_name)));
   history.replaceState(null, '', location.search + '#' + name);
   document.title = `${b.english_name} · GeoBirdModel`;
@@ -230,8 +222,7 @@ function groupOf(b) {
 }
 function shown() {
   const q = $('search').value.trim().toLowerCase();
-  return birds.filter((b) => (filter === 'all' || b.quality === filter || (filter === 'planned' && b.tier === 'P'))
-    && (!q || b.english_name.toLowerCase().includes(q) || b.scientific_name.toLowerCase().includes(q)))
+  return birds.filter((b) => (!q || b.english_name.toLowerCase().includes(q) || b.scientific_name.toLowerCase().includes(q)))
     .map((b) => ({ b, g: groupOf(b) }))
     // families in taxonomic sequence, species by scientific name within a family (genera together)
     .sort((x, y) => (x.g.key < y.g.key ? -1 : x.g.key > y.g.key ? 1 : 0) || x.b.scientific_name.localeCompare(y.b.scientific_name));
@@ -242,8 +233,7 @@ function render() {
   let last = null, html = '';
   for (const { b, g } of list) {
     if (g.key !== last) { html += `<div class="grp" title="${esc(g.title)}">${g.label}</div>`; last = g.key; }
-    html += `<button class="tile${b.model ? '' : ' missing'}" data-sci="${esc(b.scientific_name)}" title="${esc(b.english_name)} (${esc(b.scientific_name)})" aria-label="${esc(b.english_name)}">
-      <span class="q q-${esc(b.quality)}">${esc(b.quality)}</span><span class="tier">${b.tier === 'P' ? 'planned' : b.tier ? 'T' + esc(b.tier) : ''}</span>
+    html += `<button class="tile" data-sci="${esc(b.scientific_name)}" title="${esc(b.english_name)} (${esc(b.scientific_name)})" aria-label="${esc(b.english_name)}">
       <span class="pic"><img class="poster" src="${esc(b.poster || b.sticker)}" alt="" loading="lazy" decoding="async"></span>
       <span class="name">${esc(b.english_name)}</span></button>`;
   }
@@ -310,7 +300,7 @@ function hideLoop() {
 function playLoop(t) {
   if (t === hovered) return;
   hideLoop();
-  if (!t || t.classList.contains('missing')) return;
+  if (!t) return;
   const sci = t.dataset.sci, name = slug(sci), box = boxes[name], poster = t.querySelector('img.poster');
   if (noLoop.has(sci) || !box || !poster?.naturalWidth) return;
   hovered = t;
@@ -341,27 +331,10 @@ $('about').addEventListener('click', (e) => { if (e.target === $('about')) $('ab
 
 // ------------------------------------------------------------------ data
 Promise.all([fetch('gallery.json', { cache: 'no-store' }).then((r) => r.json()), map.ready]).then(([d]) => {
-  const order = { good: 0, ok: 1, pending: 2, rerun: 3, missing: 4 };
-  birds = d.birds.filter((b) => internal || b.model)
-    .sort((a, b) => internal ? ((order[a.quality] ?? 5) - (order[b.quality] ?? 5) || a.english_name.localeCompare(b.english_name))
-                             : a.english_name.localeCompare(b.english_name));
-  const done = d.birds.filter((b) => b.model).length;
-  $('count').textContent = `${done}/${d.birds.length} species modelled · ${d.birds.filter((b) => b.quality === 'good' || b.quality === 'ok').length} released`;
-  if (internal) {
-    const groups = ['all', 'good', 'ok', 'pending', 'rerun', 'missing', 'planned'];
-    $('filters').innerHTML = groups.map((g) => {
-      const n = g === 'all' ? birds.length : birds.filter((b) => b.quality === g || (g === 'planned' && b.tier === 'P')).length;
-      return n || g === 'all' ? `<button data-f="${g}" aria-pressed="${g === filter}">${g} ${n}</button>` : '';
-    }).join('');
-    $('filters').onclick = (e) => {
-      const c = e.target.closest('button'); if (!c) return;
-      filter = c.dataset.f; $('filters').querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', String(x === c))); render();
-    };
-  }
+  birds = d.birds.filter((b) => b.model);   // the gallery shows the species that have a model
   render();
   const h = decodeURIComponent(location.hash.slice(1)).replace(/_/g, ' ');
-  const withModel = birds.filter((b) => b.model);
-  select(birds.find((b) => b.scientific_name === h) || withModel[Math.floor(Math.random() * withModel.length)]);
+  select(birds.find((b) => b.scientific_name === h) || birds[Math.floor(Math.random() * birds.length)]);
   window.addEventListener('hashchange', () => {
     const b = birds.find((x) => x.scientific_name === decodeURIComponent(location.hash.slice(1)).replace(/_/g, ' '));
     if (b && b !== cur) select(b);
