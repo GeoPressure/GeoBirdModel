@@ -9,9 +9,10 @@ view of [GeoLocator Explorer](https://geopressure.org/GeoLocatorExplorer/).
 |---|---|
 | `models/<Genus_species>.glb` | glTF binary, ~2 MB: 20 000 triangles, 2048 px base colour + 1024 px normal map (WebP), skeleton, one looping animation `Fly` (1 s) |
 | `posters/<Genus_species>.webp` | Still image of the model (transparent background) |
-| `models.json` | One entry per bird: English and scientific name, files, size, source sticker, method, licence |
+| `models.json` | Birds approved for GeoLocator Explorer (quality good or ok): names, files, size, source sticker, licence |
+| `gallery.json` | Every species, with its status (used by the gallery) |
 
-Orientation: head along +Y, back along +Z (glTF axes), wingspan 0.5 units.
+Orientation (v2.0.0 and later): standard glTF axes, back +Y, head +Z, origin at the centre of the body; wingspan about 0.5 units. v1.0.0 used head +Y, back +Z.
 
 ## Use
 

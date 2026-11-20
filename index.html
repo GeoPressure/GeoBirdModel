@@ -4,169 +4,229 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Bird Models · GeoPressure</title>
-<meta name="description" content="Flapping 3D bird models (glTF) of the species tracked with multi-sensor geolocators, made for GeoLocator Explorer. Free to reuse under CC BY 4.0.">
+<meta name="description" content="3D flying models of geolocator-tracked bird species, made for GeoLocator Explorer. CC BY 4.0.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600&display=swap" rel="stylesheet">
 <script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@3.5.0/dist/model-viewer.min.js"></script>
 <style>
 :root {
-  --bg: #f4f1ea; --card: #fffdf8; --ink: #1b2230; --muted: #5d6573; --line: #e2dccf;
-  --accent: #1f6f5c; --accent-ink: #ffffff; --stage: #ece7dc; --shadow: 0 1px 2px rgba(20,25,35,.06), 0 6px 18px rgba(20,25,35,.06);
+  --bg: #f4f1ea; --ink: #1b2230; --muted: #646b78; --line: #ddd6c8; --tile: #ebe6db; --field: #fffdf8;
+  --stage: radial-gradient(120% 90% at 50% 35%, #fbf9f4 0%, #e9e3d6 100%);
+  --accent: #1f6f5c; --accent-ink: #fff; --glass: rgba(255, 253, 248, .82);
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #11151c; --card: #181e27; --ink: #eef0f3; --muted: #9aa3b0; --line: #2a323e;
-    --accent: #5fc2a6; --accent-ink: #0d1a16; --stage: #1f2631; --shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 18px rgba(0,0,0,.25);
+    --bg: #0f1319; --ink: #eef0f3; --muted: #98a1ae; --line: #252d38; --tile: #171d26; --field: #141a22;
+    --stage: radial-gradient(120% 90% at 50% 35%, #1e2631 0%, #0f1319 100%);
+    --accent: #5fc2a6; --accent-ink: #0d1a16; --glass: rgba(20, 26, 34, .78);
   }
 }
 :root[data-theme="dark"] {
-  --bg: #11151c; --card: #181e27; --ink: #eef0f3; --muted: #9aa3b0; --line: #2a323e;
-  --accent: #5fc2a6; --accent-ink: #0d1a16; --stage: #1f2631; --shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 18px rgba(0,0,0,.25);
+  --bg: #0f1319; --ink: #eef0f3; --muted: #98a1ae; --line: #252d38; --tile: #171d26; --field: #141a22;
+  --stage: radial-gradient(120% 90% at 50% 35%, #1e2631 0%, #0f1319 100%);
+  --accent: #5fc2a6; --accent-ink: #0d1a16; --glass: rgba(20, 26, 34, .78);
 }
 * { box-sizing: border-box; }
-body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.55 Sora, system-ui, sans-serif; }
-a { color: var(--accent); }
-.wrap { max-width: 1120px; margin: 0 auto; padding: 0 16px; }
-header { padding: 40px 0 8px; }
-.kicker { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin: 0 0 6px; }
-h1 { font-size: clamp(26px, 4vw, 36px); font-weight: 600; margin: 0 0 10px; letter-spacing: -.01em; }
-.lede { max-width: 720px; color: var(--muted); margin: 0 0 22px; }
-.bar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 18px; }
-input[type=search] { flex: 1 1 240px; min-width: 0; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--card); color: var(--ink); font: inherit; }
-.count { color: var(--muted); font-size: 13px; }
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
-.card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow); display: flex; flex-direction: column; cursor: pointer; transition: transform .15s ease; text-align: left; padding: 0; color: inherit; font: inherit; }
-.card:hover, .card:focus-visible { transform: translateY(-2px); outline: none; border-color: var(--accent); }
-.card .img { aspect-ratio: 4 / 3; background: var(--stage); display: grid; place-items: center; }
-.card img { width: 88%; height: 88%; object-fit: contain; }
-.card .meta { padding: 10px 12px 12px; }
-.card .en { font-weight: 600; }
-.card .sci { font-style: italic; color: var(--muted); font-size: 13px; }
-dialog { width: min(920px, calc(100vw - 32px)); max-height: calc(100vh - 32px); padding: 0; border: 1px solid var(--line); border-radius: 16px; background: var(--card); color: var(--ink); }
-dialog::backdrop { background: rgba(10, 14, 20, .55); }
-.dlg { display: grid; grid-template-columns: 1fr 280px; }
-model-viewer { width: 100%; height: min(70vh, 560px); background: var(--stage); --poster-color: transparent; }
-.side { padding: 18px; display: flex; flex-direction: column; gap: 10px; overflow: auto; }
-.side h2 { margin: 0; font-size: 20px; font-weight: 600; }
-.side .sci { font-style: italic; color: var(--muted); margin-top: -6px; }
-.side dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; font-size: 13px; }
-.side dt { color: var(--muted); }
-.side dd { margin: 0; overflow-wrap: anywhere; }
-.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 9px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--card); color: var(--ink); text-decoration: none; font: inherit; font-size: 14px; cursor: pointer; }
-.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
-.row { display: flex; gap: 8px; flex-wrap: wrap; }
-.sticker { width: 100%; max-height: 150px; object-fit: contain; background: #fff; border-radius: 10px; border: 1px solid var(--line); }
-.close { position: absolute; top: 10px; right: 10px; z-index: 2; width: 34px; height: 34px; border-radius: 50%; padding: 0; }
-section.use { margin: 44px 0; }
-section.use h2 { font-size: 20px; font-weight: 600; margin: 0 0 8px; }
-pre { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px; overflow-x: auto; font-size: 13px; line-height: 1.5; }
-footer { color: var(--muted); font-size: 13px; padding: 24px 0 48px; border-top: 1px solid var(--line); }
-@media (max-width: 720px) { .dlg { grid-template-columns: 1fr; } model-viewer { height: 52vh; } }
+html, body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.5 Sora, system-ui, sans-serif; }
+a { color: inherit; }
+.top { display: flex; align-items: center; gap: 12px; padding: 12px 16px; flex-wrap: wrap; }
+.top h1 { font-size: 15px; font-weight: 600; margin: 0; letter-spacing: .01em; }
+.top .sp { flex: 1; }
+.top .count { font-size: 12px; color: var(--muted); }
+.top a.explorer { font-size: 13px; color: var(--muted); text-decoration: none; }
+.top a.explorer:hover { color: var(--accent); }
+input[type=search] { font: inherit; font-size: 13px; color: var(--ink); background: var(--field); border: 1px solid var(--line);
+  border-radius: 999px; padding: 6px 14px; width: min(260px, 100%); }
+input[type=search]:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+.stage { position: relative; background: var(--stage); }
+model-viewer { width: 100%; height: min(66vh, 660px); --poster-color: transparent; background: transparent; }
+.stage .big { display: none; height: min(66vh, 660px); width: 100%; object-fit: contain; padding: 32px; opacity: .8; }
+.stage.missing model-viewer, .stage.missing .ctrl { display: none; }
+.stage.missing .big { display: block; }
+.label { position: absolute; left: 16px; bottom: 16px; max-width: min(560px, 60%); }
+.label .en { font-size: clamp(22px, 3.2vw, 34px); font-weight: 600; letter-spacing: -.01em; line-height: 1.1; }
+.label .sci { font-style: italic; color: var(--muted); font-size: 15px; }
+.label .links { margin-top: 8px; display: flex; gap: 12px; flex-wrap: wrap; font-size: 13px; }
+.label .links a { color: var(--accent); text-decoration: none; }
+.label .links a:hover { text-decoration: underline; }
+.label .note { margin-top: 6px; font-size: 12px; color: var(--muted); }
+
+.ctrl { position: absolute; right: 16px; bottom: 16px; display: flex; align-items: center; gap: 8px; }
+.seg { display: inline-flex; background: var(--glass); backdrop-filter: blur(8px); border: 1px solid var(--line); border-radius: 999px; padding: 3px; }
+.seg button { border: 0; background: transparent; color: var(--muted); font: inherit; font-size: 13px; padding: 6px 14px; border-radius: 999px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+.seg button:disabled { opacity: .4; cursor: default; }
+.icon { display: inline-grid; place-items: center; width: 36px; height: 36px; border-radius: 999px; background: var(--glass);
+  backdrop-filter: blur(8px); border: 1px solid var(--line); color: var(--ink); text-decoration: none; }
+.icon:hover { border-color: var(--accent); color: var(--accent); }
+.icon svg { width: 18px; height: 18px; }
+.thumb { width: 52px; height: 52px; border-radius: 12px; overflow: hidden; background: #fff; border: 1px solid var(--line); display: block; }
+.thumb img { width: 100%; height: 100%; object-fit: contain; }
+
+.chips { display: none; gap: 6px; flex-wrap: wrap; padding: 12px 16px 0; }
+body.internal .chips { display: flex; }
+.chips button { font: inherit; font-size: 12px; border: 1px solid var(--line); background: var(--tile); color: var(--ink); border-radius: 999px; padding: 4px 10px; cursor: pointer; }
+.chips button[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; padding: 12px 16px 8px; }
+.tile { position: relative; border: 1px solid transparent; background: var(--tile); border-radius: 12px; padding: 6px 6px 8px; cursor: pointer; color: inherit; font: inherit; text-align: center; }
+.tile:hover { border-color: var(--line); }
+.tile[aria-current="true"] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
+.tile img { width: 100%; aspect-ratio: 4 / 3; object-fit: contain; display: block; }
+.tile .name { display: block; font-size: 12px; line-height: 1.3; margin-top: 2px; }
+.tile.missing img { opacity: .5; filter: grayscale(.5); }
+.q, .tier { display: none; }
+body.internal .q { display: inline-block; font-size: 10px; letter-spacing: .04em; text-transform: uppercase; padding: 1px 6px; border-radius: 6px; color: #fff; }
+body.internal .tile .q { position: absolute; top: 6px; left: 6px; }
+body.internal .tile .tier { display: block; position: absolute; top: 6px; right: 8px; font-size: 10px; color: var(--muted); }
+.q-good { background: #2e7d4f; } .q-ok { background: #b07a12; } .q-pending { background: #3b6fb6; } .q-rerun { background: #b33a3a; } .q-missing { background: #6b7280; }
+.empty { padding: 24px 16px; color: var(--muted); display: none; }
+
+footer { padding: 18px 16px 28px; color: var(--muted); font-size: 12px; display: flex; flex-wrap: wrap; gap: 4px 14px; }
+footer a { color: var(--muted); }
+footer a:hover { color: var(--accent); }
+@media (max-width: 640px) {
+  model-viewer, .stage .big { height: 56vh; }
+  .label { top: 12px; bottom: auto; max-width: none; right: 16px; }
+  .ctrl { left: 16px; right: 16px; bottom: 12px; justify-content: space-between; }
+  .thumb { display: none; }
+  .grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
+  input[type=search] { width: 100%; order: 5; }
+}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <p class="kicker">GeoPressure · GeoLocator Explorer</p>
-    <h1>Bird models</h1>
-    <p class="lede">Flapping 3D models of the bird species tracked with multi-sensor geolocators, made for the bird view of
-      <a href="https://geopressure.org/GeoLocatorExplorer/">GeoLocator Explorer</a>. Click a bird to see it fly, turn it around and download it.
-      Free to reuse under CC BY 4.0.</p>
-  </header>
-  <div class="bar">
-    <input id="q" type="search" placeholder="Search by English or scientific name" aria-label="Search birds">
-    <span class="count" id="count"></span>
-  </div>
-  <div class="grid" id="grid"></div>
-
-  <section class="use">
-    <h2>Use a model</h2>
-    <p>Every model is a glTF binary (<code>.glb</code>, about 2 MB) with one looping animation, <code>Fly</code>
-      (one wing beat per second). Head along +Y, back along +Z (glTF axes), wingspan 0.5 units.
-      All models are listed in <a href="models.json">models.json</a>; files are served through the jsDelivr CDN:</p>
-<pre>https://cdn.jsdelivr.net/gh/GeoPressure/bird-models@main/models/Upupa_epops.glb</pre>
-    <p>In a web page with <a href="https://modelviewer.dev">&lt;model-viewer&gt;</a>:</p>
-<pre>&lt;script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@3.5.0/dist/model-viewer.min.js"&gt;&lt;/script&gt;
-&lt;model-viewer src="https://cdn.jsdelivr.net/gh/GeoPressure/bird-models@main/models/Upupa_epops.glb"
-  animation-name="Fly" autoplay camera-controls&gt;&lt;/model-viewer&gt;</pre>
-    <p>In three.js: load with <code>GLTFLoader</code> and play <code>gltf.animations[0]</code> with an <code>AnimationMixer</code>.</p>
-  </section>
-
-  <footer>
-    Models by <a href="https://github.com/GeoPressure/bird-models">GeoPressure/bird-models</a> (Raphaël Nussbaumer, Swiss Ornithological Institute),
-    made from the <a href="https://github.com/alchaincyf/huashu-bird-sticker">huashu-bird-sticker</a> illustrations by Huashu (CC BY 4.0)
-    with <a href="https://www.meshy.ai">Meshy</a> and Blender; method in
-    <a href="https://github.com/GeoPressure/GeoLocatorExplorer/tree/main/bird-models">GeoLocatorExplorer/bird-models</a>.
-    Licence <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. AI-generated illustrations, not checked by experts in every detail.
-  </footer>
+<div class="top">
+  <h1>Bird models</h1>
+  <span class="count" id="count"></span>
+  <span class="sp"></span>
+  <input type="search" id="search" placeholder="Search a species" aria-label="Search a species">
+  <a class="explorer" href="https://geopressure.org/GeoLocatorExplorer/">GeoLocator Explorer ↗</a>
 </div>
 
-<dialog id="dlg" aria-label="Bird model">
-  <button class="btn close" id="close" aria-label="Close">✕</button>
-  <div class="dlg">
-    <model-viewer id="mv" animation-name="Fly" autoplay camera-controls touch-action="pan-y"
-      shadow-intensity="0" exposure="1.05" camera-orbit="35deg 65deg auto" interaction-prompt="none"></model-viewer>
-    <div class="side">
-      <h2 id="d-en"></h2>
-      <div class="sci" id="d-sci"></div>
-      <img class="sticker" id="d-sticker" alt="Source illustration">
-      <div class="row">
-        <a class="btn primary" id="d-dl" download>Download .glb</a>
-        <button class="btn" id="d-anim">Pause</button>
-      </div>
-      <dl>
-        <dt>Size</dt><dd id="d-size"></dd>
-        <dt>Updated</dt><dd id="d-upd"></dd>
-        <dt>Method</dt><dd id="d-method"></dd>
-        <dt>Licence</dt><dd>CC BY 4.0</dd>
-      </dl>
-    </div>
+<div class="stage" id="stage">
+  <model-viewer id="mv" camera-controls auto-rotate auto-rotate-delay="3000" rotation-per-second="12deg"
+    camera-target="0m 0m 0m" camera-orbit="60deg 68deg auto" min-camera-orbit="auto 5deg auto" max-camera-orbit="auto 175deg auto"
+    field-of-view="26deg" exposure="1.05" shadow-intensity="0" interaction-prompt="none" touch-action="pan-y"></model-viewer>
+  <img class="big" id="big" alt="">
+  <div class="label">
+    <div class="en" id="en"></div>
+    <div class="sci" id="sci"></div>
+    <div class="links" id="links"></div>
+    <div class="note" id="note"></div>
   </div>
-</dialog>
+  <div class="ctrl">
+    <a class="thumb" id="p-sticker" target="_blank" rel="noopener" title="Source illustration (huashu-bird-sticker)"><img id="i-sticker" alt="Source illustration"></a>
+    <div class="seg" role="group" aria-label="Model">
+      <button id="v-fly" aria-pressed="true" title="Flapping model, as used in GeoLocator Explorer">In flight</button>
+      <button id="v-static" aria-pressed="false" title="The 3D model before animation">Still</button>
+    </div>
+    <a class="icon" id="dl" download title="Download this model (.glb)" aria-label="Download this model">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+    </a>
+  </div>
+</div>
+
+<div class="chips" id="chips"></div>
+<div class="grid" id="grid"></div>
+<div class="empty" id="empty">No species matches.</div>
+
+<footer>
+  <a href="https://geopressure.org/GeoLocatorExplorer/">GeoLocator Explorer</a>
+  <span>Illustrations <a href="https://github.com/alchaincyf/huashu-bird-sticker">huashu-bird-sticker</a> (Huashu)</span>
+  <span>Species <a href="https://doi.org/10.5281/zenodo.18187092">Master GeoLocator Data Package</a></span>
+  <span>3D <a href="https://www.meshy.ai">Meshy</a> + <a href="https://www.blender.org">Blender</a></span>
+  <a href="https://github.com/GeoPressure/bird-models">Source &amp; method</a>
+  <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>
+</footer>
 
 <script>
-const grid = document.getElementById("grid"), q = document.getElementById("q"), count = document.getElementById("count");
-const dlg = document.getElementById("dlg"), mv = document.getElementById("mv");
-let birds = [];
-const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+// Public view by default. ?internal adds what the maintainers track: status badges, notes,
+// missing and planned species, and filters by status.
+const internal = new URLSearchParams(location.search).has("internal");
+document.body.classList.toggle("internal", internal);
+const EXPLORER = "https://geopressure.org/GeoLocatorExplorer/";
+const $ = (id) => document.getElementById(id);
+const mv = $("mv"), grid = $("grid");
+let birds = [], cur = null, kind = "fly", filter = "all";
+
+function show() {
+  const fly = kind === "fly" || !cur.static;
+  const src = fly ? cur.model : cur.static;
+  if (mv.src !== new URL(src, location.href).href) mv.src = src;
+  mv.animationName = fly ? "Fly" : null;
+  if (fly) mv.play(); else mv.pause();
+  $("v-fly").setAttribute("aria-pressed", String(fly));
+  $("v-static").setAttribute("aria-pressed", String(!fly));
+  $("v-static").disabled = !cur.static;
+  $("dl").href = src;
+}
+function select(b, scroll) {
+  cur = b;
+  const miss = !b.model;
+  $("stage").classList.toggle("missing", miss);
+  if (miss) $("big").src = b.sticker;
+  $("en").textContent = b.english_name;
+  $("sci").textContent = b.scientific_name;
+  const n = +b.n_tags || 0;
+  $("links").innerHTML = b.tag_id
+    ? `<a href="${EXPLORER}tag/${encodeURIComponent(b.tag_id)}" target="_blank" rel="noopener">See it in GeoLocator Explorer ↗</a>`
+      + (n ? `<span style="color:var(--muted)">${n} tracked ${n === 1 ? "bird" : "birds"}</span>` : "")
+    : "";
+  $("note").innerHTML = internal
+    ? `<span class="q q-${b.quality}">${b.quality}</span> ${[b.tier ? (b.tier === "P" ? "planned (GeoCollab)" : "tier " + b.tier) : "", b.quality_notes || ""].filter(Boolean).join(" · ")}`
+    : "";
+  $("i-sticker").src = $("p-sticker").href = b.sticker;
+  if (!miss) show();
+  grid.querySelectorAll(".tile").forEach((t) => t.setAttribute("aria-current", String(t.dataset.sci === b.scientific_name)));
+  history.replaceState(null, "", location.search + "#" + b.scientific_name.replace(/ /g, "_"));
+  document.title = `${b.english_name} · Bird Models`;
+  if (scroll) window.scrollTo({ top: 0, behavior: "smooth" });
+}
 function render() {
-  const term = q.value.trim().toLowerCase();
-  const list = birds.filter((b) => !term || (b.english_name + " " + b.scientific_name).toLowerCase().includes(term));
-  grid.innerHTML = list.map((b, i) => `
-    <button class="card" data-i="${birds.indexOf(b)}" aria-label="View ${esc(b.english_name)} in 3D">
-      <div class="img"><img src="${esc(b.poster)}" alt="" loading="lazy"></div>
-      <div class="meta"><div class="en">${esc(b.english_name)}</div><div class="sci">${esc(b.scientific_name)}</div></div>
-    </button>`).join("");
-  count.textContent = `${list.length} of ${birds.length} species`;
+  const q = $("search").value.trim().toLowerCase();
+  const list = birds.filter((b) => (filter === "all" || b.quality === filter || (filter === "planned" && b.tier === "P"))
+    && (!q || b.english_name.toLowerCase().includes(q) || b.scientific_name.toLowerCase().includes(q)));
+  grid.innerHTML = list.map((b) => `<button class="tile${b.model ? "" : " missing"}" data-sci="${b.scientific_name}" title="${b.scientific_name}">
+      <span class="q q-${b.quality}">${b.quality}</span><span class="tier">${b.tier === "P" ? "planned" : b.tier ? "T" + b.tier : ""}</span>
+      <img src="${b.poster || b.sticker}" alt="" loading="lazy"><span class="name">${b.english_name}</span></button>`).join("");
+  $("empty").style.display = list.length ? "none" : "block";
+  if (cur) grid.querySelectorAll(".tile").forEach((t) => t.setAttribute("aria-current", String(t.dataset.sci === cur.scientific_name)));
 }
-function open(b) {
-  mv.src = b.model;
-  mv.poster = b.poster;
-  document.getElementById("d-en").textContent = b.english_name;
-  document.getElementById("d-sci").textContent = b.scientific_name;
-  document.getElementById("d-sticker").src = b.sticker;
-  document.getElementById("d-dl").href = b.model;
-  document.getElementById("d-size").textContent = (b.size_kb / 1024).toFixed(1) + " MB";
-  document.getElementById("d-upd").textContent = b.updated;
-  document.getElementById("d-method").textContent = b.method;
-  document.getElementById("d-anim").textContent = "Pause";
-  dlg.showModal();
-  history.replaceState(null, "", "#" + b.scientific_name.replace(/ /g, "_"));
-}
-grid.addEventListener("click", (e) => { const c = e.target.closest(".card"); if (c) open(birds[+c.dataset.i]); });
-q.addEventListener("input", render);
-document.getElementById("close").onclick = () => dlg.close();
-dlg.addEventListener("close", () => { mv.pause(); history.replaceState(null, "", location.pathname); });
-dlg.addEventListener("click", (e) => { if (e.target === dlg) dlg.close(); });
-document.getElementById("d-anim").onclick = (e) => {
-  if (mv.paused) { mv.play(); e.target.textContent = "Pause"; } else { mv.pause(); e.target.textContent = "Play"; }
-};
-fetch("models.json").then((r) => r.json()).then((d) => {
-  birds = d.birds.sort((a, b) => a.english_name.localeCompare(b.english_name));
+$("v-fly").onclick = () => { kind = "fly"; show(); };
+$("v-static").onclick = () => { kind = "static"; show(); };
+$("search").oninput = render;
+grid.addEventListener("click", (e) => {
+  const t = e.target.closest(".tile");
+  if (t) select(birds.find((b) => b.scientific_name === t.dataset.sci), true);
+});
+mv.addEventListener("load", () => { if (kind === "fly") mv.play(); });
+
+Promise.all([fetch("gallery.json", { cache: "no-store" }).then((r) => r.json()), customElements.whenDefined("model-viewer")]).then(([d]) => {
+  const order = { good: 0, ok: 1, pending: 2, rerun: 3, missing: 4 };
+  birds = d.birds.filter((b) => internal || b.model)
+    .sort((a, b) => internal ? ((order[a.quality] ?? 5) - (order[b.quality] ?? 5) || a.english_name.localeCompare(b.english_name))
+                             : a.english_name.localeCompare(b.english_name));
+  const done = d.birds.filter((b) => b.model).length;
+  $("count").textContent = internal
+    ? `${done}/${d.birds.length} species modelled · ${d.birds.filter((b) => b.quality === "good" || b.quality === "ok").length} released`
+    : `${done} species`;
+  if (internal) {
+    const groups = ["all", "good", "ok", "pending", "rerun", "missing", "planned"];
+    $("chips").innerHTML = groups.map((g) => {
+      const n = g === "all" ? birds.length : birds.filter((b) => b.quality === g || (g === "planned" && b.tier === "P")).length;
+      return `<button data-f="${g}" aria-pressed="${g === filter}">${g} (${n})</button>`;
+    }).join("");
+    $("chips").onclick = (e) => {
+      const c = e.target.closest("button"); if (!c) return;
+      filter = c.dataset.f; $("chips").querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", String(x === c))); render();
+    };
+  }
   render();
   const h = decodeURIComponent(location.hash.slice(1)).replace(/_/g, " ");
-  const b = birds.find((x) => x.scientific_name === h);
-  if (b) open(b);
+  const withModel = birds.filter((b) => b.model);
+  select(birds.find((b) => b.scientific_name === h) || withModel[Math.floor(Math.random() * withModel.length)], false);
 });
 </script>
 </body>

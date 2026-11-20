@@ -1,1 +1,5 @@
 .DS_Store
+__pycache__/
+# full-quality Meshy models (archived on Zenodo) and per-species working files
+raw/
+work/

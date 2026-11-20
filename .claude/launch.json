@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "gallery",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["--yes", "vite@5.4.10", ".", "--port", "8090", "--strictPort"],
+      "port": 8090
+    }
+  ]
+}
