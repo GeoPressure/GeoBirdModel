@@ -2,232 +2,389 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Bird Models · GeoPressure</title>
-<meta name="description" content="3D flying models of geolocator-tracked bird species, made for GeoLocator Explorer. CC BY 4.0.">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>GeoBirdModel · 3D models of tracked birds in flight</title>
+<meta name="description" content="GeoBirdModel: 3D flying models of geolocator-tracked bird species, flying over the habitats of their migration. Part of the GeoPressure suite, made for GeoLocator Explorer. CC BY 4.0.">
+<link rel="icon" href="assets/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="assets/favicon-180.png">
+<meta property="og:title" content="GeoBirdModel · 3D models of tracked birds in flight">
+<meta property="og:image" content="assets/logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600&display=swap" rel="stylesheet">
-<script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@3.5.0/dist/model-viewer.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
+/* The habitat scene (one WebGL canvas) fills the window. Over it: the header (top), the species
+   filmstrip (bottom, full width) and the migration map (a card on the right, between them; hidden
+   by default, opened by its tab). The page is light only; the map sets the scene's Day / Night / As flown. */
 :root {
-  --bg: #f4f1ea; --ink: #1b2230; --muted: #646b78; --line: #ddd6c8; --tile: #ebe6db; --field: #fffdf8;
-  --stage: radial-gradient(120% 90% at 50% 35%, #fbf9f4 0%, #e9e3d6 100%);
-  --accent: #1f6f5c; --accent-ink: #fff; --glass: rgba(255, 253, 248, .82);
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #0f1319; --ink: #eef0f3; --muted: #98a1ae; --line: #252d38; --tile: #171d26; --field: #141a22;
-    --stage: radial-gradient(120% 90% at 50% 35%, #1e2631 0%, #0f1319 100%);
-    --accent: #5fc2a6; --accent-ink: #0d1a16; --glass: rgba(20, 26, 34, .78);
-  }
-}
-:root[data-theme="dark"] {
-  --bg: #0f1319; --ink: #eef0f3; --muted: #98a1ae; --line: #252d38; --tile: #171d26; --field: #141a22;
-  --stage: radial-gradient(120% 90% at 50% 35%, #1e2631 0%, #0f1319 100%);
-  --accent: #5fc2a6; --accent-ink: #0d1a16; --glass: rgba(20, 26, 34, .78);
+  --bg: #f4f1ea; --ink: #1b2230; --muted: #59606d; --line: rgba(60, 50, 30, .16); --tile: rgba(255, 253, 248, .55); --field: rgba(255, 253, 248, .84);
+  --glass: rgba(250, 248, 242, .76); --glass-strong: rgba(246, 243, 236, .95);
+  --stage: radial-gradient(120% 90% at 40% 45%, #fbf9f4 0%, #e3dccd 100%);
+  --accent: #1f6f5c; --accent-ink: #fff;
+  --top-h: 64px; --side-w: clamp(320px, 28vw, 520px); --display: Fraunces, 'Iowan Old Style', Georgia, serif;
+  --tile-w: clamp(118px, 9.2vw, 220px); --strip-h: calc(var(--tile-w) * .75 + 86px);   /* larger tiles on large screens */
+  color-scheme: light;
 }
 * { box-sizing: border-box; }
-html, body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.5 Sora, system-ui, sans-serif; }
+html, body { margin: 0; color: var(--ink); font: 14px/1.5 Manrope, system-ui, sans-serif; }
+html { background: var(--bg); }
+body { height: 100vh; height: 100dvh; overflow: hidden; background: var(--stage); }
 a { color: inherit; }
-.top { display: flex; align-items: center; gap: 12px; padding: 12px 16px; flex-wrap: wrap; }
-.top h1 { font-size: 15px; font-weight: 600; margin: 0; letter-spacing: .01em; }
-.top .sp { flex: 1; }
-.top .count { font-size: 12px; color: var(--muted); }
-.top a.explorer { font-size: 13px; color: var(--muted); text-decoration: none; }
-.top a.explorer:hover { color: var(--accent); }
-input[type=search] { font: inherit; font-size: 13px; color: var(--ink); background: var(--field); border: 1px solid var(--line);
-  border-radius: 999px; padding: 6px 14px; width: min(260px, 100%); }
-input[type=search]:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
-
-.stage { position: relative; background: var(--stage); }
-model-viewer { width: 100%; height: min(66vh, 660px); --poster-color: transparent; background: transparent; }
-.stage .big { display: none; height: min(66vh, 660px); width: 100%; object-fit: contain; padding: 32px; opacity: .8; }
-.stage.missing model-viewer, .stage.missing .ctrl { display: none; }
-.stage.missing .big { display: block; }
-.label { position: absolute; left: 16px; bottom: 16px; max-width: min(560px, 60%); }
-.label .en { font-size: clamp(22px, 3.2vw, 34px); font-weight: 600; letter-spacing: -.01em; line-height: 1.1; }
-.label .sci { font-style: italic; color: var(--muted); font-size: 15px; }
-.label .links { margin-top: 8px; display: flex; gap: 12px; flex-wrap: wrap; font-size: 13px; }
-.label .links a { color: var(--accent); text-decoration: none; }
-.label .links a:hover { text-decoration: underline; }
-.label .note { margin-top: 6px; font-size: 12px; color: var(--muted); }
-
-.ctrl { position: absolute; right: 16px; bottom: 16px; display: flex; align-items: center; gap: 8px; }
-.seg { display: inline-flex; background: var(--glass); backdrop-filter: blur(8px); border: 1px solid var(--line); border-radius: 999px; padding: 3px; }
-.seg button { border: 0; background: transparent; color: var(--muted); font: inherit; font-size: 13px; padding: 6px 14px; border-radius: 999px; cursor: pointer; }
-.seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
-.seg button:disabled { opacity: .4; cursor: default; }
-.icon { display: inline-grid; place-items: center; width: 36px; height: 36px; border-radius: 999px; background: var(--glass);
-  backdrop-filter: blur(8px); border: 1px solid var(--line); color: var(--ink); text-decoration: none; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.glass { background: var(--glass); border: 1px solid var(--line); -webkit-backdrop-filter: blur(14px) saturate(1.2); backdrop-filter: blur(14px) saturate(1.2); }
+.icon { display: inline-grid; place-items: center; width: 34px; height: 34px; flex: none; border-radius: 999px; background: var(--field);
+  border: 1px solid var(--line); color: var(--ink); text-decoration: none; cursor: pointer; padding: 0; }
 .icon:hover { border-color: var(--accent); color: var(--accent); }
-.icon svg { width: 18px; height: 18px; }
-.thumb { width: 52px; height: 52px; border-radius: 12px; overflow: hidden; background: #fff; border: 1px solid var(--line); display: block; }
-.thumb img { width: 100%; height: 100%; object-fit: contain; }
+.icon svg { width: 17px; height: 17px; }
+.pill { border: 1px solid var(--line); background: var(--field); border-radius: 999px; padding: 4px 12px; font-size: 12.5px; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; text-decoration: none; color: var(--ink); }
+.pill:hover { border-color: var(--accent); color: var(--accent); }
+.pill[aria-pressed="true"], .icon[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.pill svg { width: 14px; height: 14px; }
 
-.chips { display: none; gap: 6px; flex-wrap: wrap; padding: 12px 16px 0; }
-body.internal .chips { display: flex; }
-.chips button { font: inherit; font-size: 12px; border: 1px solid var(--line); background: var(--tile); color: var(--ink); border-radius: 999px; padding: 4px 10px; cursor: pointer; }
-.chips button[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
+/* ---------------------------------------------------------------- the scene, behind everything */
+#c { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; z-index: 0; }
+#fade { position: fixed; inset: 0; background: var(--bg); opacity: 1; transition: opacity .25s ease; pointer-events: none; z-index: 1; }
 
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; padding: 12px 16px 8px; }
-.tile { position: relative; border: 1px solid transparent; background: var(--tile); border-radius: 12px; padding: 6px 6px 8px; cursor: pointer; color: inherit; font: inherit; text-align: center; }
+/* ---------------------------------------------------------------- header */
+.top { position: fixed; left: 0; right: 0; top: 0; z-index: 20; height: var(--top-h); display: flex; align-items: center; gap: 8px; padding: 0 14px 0 16px;
+  pointer-events: none; }
+.top > * { pointer-events: auto; }
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; padding: 6px 16px 6px 10px; border-radius: 14px;
+  background: var(--glass-strong); border: 1px solid var(--line); box-shadow: 0 2px 12px rgba(0,0,0,.08); }
+.brand img { width: 40px; height: auto; display: block; }
+.brand h1 { margin: 0; font: 600 21px/1 var(--display); letter-spacing: -.01em; white-space: nowrap; }
+.brand h1 i { font-weight: 400; }
+.brand .tag { font-size: 11.5px; color: var(--muted); white-space: nowrap; margin-top: 3px; }
+.top .sp { flex: 1; pointer-events: none; }
+.top .count { font-size: 12px; color: var(--muted); white-space: nowrap; display: none; }
+body.internal .top .count { display: inline; }
+/* scene time of day: Day / Night / Auto (follows the tracked bird) */
+.seg { display: inline-flex; padding: 2px; border-radius: 999px; background: var(--field); border: 1px solid var(--line); }
+.seg button { border: 0; background: transparent; border-radius: 999px; padding: 4px 10px; font-size: 12.5px; cursor: pointer; display: inline-flex; gap: 5px; align-items: center; color: var(--muted); }
+.seg button svg { width: 14px; height: 14px; }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+.seg button:disabled { opacity: .45; cursor: default; }
+.xlink img { width: 20px; height: 20px; border-radius: 50%; background: #fff; padding: 1px; margin-left: -6px; }
+.nomodel #dl { display: none; }
+
+/* ---------------------------------------------------------------- overlays */
+.app { position: fixed; inset: 0; z-index: 10; pointer-events: none; }
+.app > * { pointer-events: auto; }
+.stage { position: absolute; left: 0; top: 0; right: 0; bottom: var(--strip-h); pointer-events: none; }
+.label { position: absolute; left: 24px; bottom: 16px; max-width: min(620px, calc(100% - 48px)); color: #f6f4ef; pointer-events: none;
+  text-shadow: 0 1px 3px rgba(0,0,0,.55), 0 0 22px rgba(0,0,0,.35); }
+.stage.plain .label { color: var(--ink); text-shadow: none; }
+.label .en { font: 600 clamp(26px, 3.4vw, 44px)/1.08 var(--display); letter-spacing: -.01em; }
+.label .sci { font-style: italic; opacity: .88; font-size: 15px; }
+.label .q { vertical-align: 6px; margin-left: 6px; font-size: 10px !important; }
+.stage .msg { position: absolute; left: 50%; top: 46%; transform: translate(-50%, -50%); padding: 10px 16px; border-radius: 12px; font-size: 13px; display: none; text-align: center; }
+.stage.nomodel .msg { display: block; }
+#status { position: absolute; left: 50%; top: calc(var(--top-h) + 8px); transform: translateX(-50%); font-size: 12px; color: rgba(246,244,239,.9); text-shadow: 0 1px 3px rgba(0,0,0,.6); }
+.stage.plain #status { color: var(--muted); text-shadow: none; }
+
+/* ---------------------------------------------------------------- the map: a card on the right, from the header to the strip, opening where its tab is */
+.side { position: absolute; right: 14px; top: calc(var(--top-h) + 4px); bottom: calc(var(--strip-h) + 14px); width: var(--side-w);
+  background: #a9c9e6; overflow: hidden; border-radius: 16px; border: 1px solid var(--line); box-shadow: 0 10px 34px rgba(0,0,0,.2);
+  transform-origin: 100% 0; transition: transform .28s cubic-bezier(.3,.7,.2,1), opacity .22s; }
+body.map-closed .side, body.grid-open .side { transform: scale(.6); opacity: 0; pointer-events: none; }
+#mapopen { position: absolute; right: 14px; top: calc(var(--top-h) + 4px); display: none; align-items: center; gap: 10px; padding: 11px 16px 11px 13px;
+  border: 0; border-radius: 14px; background: var(--accent); color: var(--accent-ink); font: 600 14px/1.2 Manrope, system-ui, sans-serif;
+  cursor: pointer; box-shadow: 0 6px 20px rgba(0,0,0,.22); transition: transform .15s; }
+#mapopen:hover { transform: translateY(-1px); }
+#mapopen svg { width: 20px; height: 20px; flex: none; }
+#mapopen small { display: block; font-size: 11px; font-weight: 400; opacity: .85; margin-top: 2px; }
+body.map-closed #mapopen { display: inline-flex; }
+body.grid-open #mapopen { display: none; }
+.side header { position: absolute; left: 10px; right: 10px; top: 10px; z-index: 2; display: flex; align-items: center; gap: 6px; pointer-events: none; }
+.side header > * { pointer-events: auto; }
+.side h2 { font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 0; display: flex; gap: 8px; align-items: baseline;
+  min-width: 0; padding: 4px 11px; border-radius: 999px; background: var(--glass-strong); border: 1px solid var(--line); }
+.side h2 a { text-transform: none; letter-spacing: 0; font-weight: 500; color: var(--accent); text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.side h2 a:hover { text-decoration: underline; }
+.side header .icon { width: 30px; height: 30px; background: var(--glass-strong); margin-left: auto; }
+.mapbox { position: absolute; inset: 0; overflow: hidden; }
+#map { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; cursor: grab; }
+.mapctl { position: absolute; right: 10px; top: 52px; z-index: 2; display: flex; flex-direction: column; gap: 4px; }
+.mapctl button { width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--line); background: var(--glass-strong); color: var(--ink); cursor: pointer;
+  display: grid; place-items: center; font-size: 16px; line-height: 1; padding: 0; }
+.mapctl button:hover { border-color: var(--accent); color: var(--accent); }
+.tip { position: absolute; pointer-events: none; padding: 3px 8px; border-radius: 8px; font-size: 11.5px; white-space: nowrap; background: var(--glass-strong);
+  border: 1px solid var(--line); box-shadow: 0 2px 8px rgba(0,0,0,.15); transform: translate(-50%, calc(-100% - 12px)); opacity: 0; transition: opacity .12s; z-index: 3; }
+.tip.on { opacity: 1; }
+.mapmsg { position: absolute; left: 10px; top: 52px; right: 52px; font-size: 12px; padding: 5px 10px; border-radius: 10px; background: var(--glass-strong); display: none; }
+.mapbox.notrack .mapmsg { display: block; }
+.mapinfo { position: absolute; left: 10px; right: 10px; bottom: 10px; z-index: 2; padding: 9px 12px; border-radius: 14px; display: flex; flex-direction: column; gap: 7px;
+  background: var(--glass-strong); border: 1px solid var(--line); box-shadow: 0 4px 18px rgba(0,0,0,.12); }
+.play { display: flex; align-items: center; gap: 10px; }
+.daynight { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
+.daynight .seg button { padding: 3px 10px; font-size: 12px; }
+.play .icon { width: 32px; height: 32px; background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.play .icon:hover { filter: brightness(1.1); color: var(--accent-ink); }
+.play .icon .pause { display: none; }
+.play.on .icon .pause { display: block; } .play.on .icon .go { display: none; }
+#prog { flex: 1; min-width: 60px; accent-color: var(--accent); }
+#progtxt { font-size: 11.5px; color: var(--muted); white-space: nowrap; min-width: 9ch; text-align: right; font-variant-numeric: tabular-nums; }
+.legend { color: var(--muted); font-size: 11px; display: flex; gap: 4px 12px; align-items: center; flex-wrap: wrap; }
+.legend i { display: inline-block; width: 14px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 4px; }
+.legend b { display: inline-block; width: 9px; height: 9px; vertical-align: -1px; margin-right: 4px; border: 1.5px solid #fff; }
+.legend .n { background: #22305a; }
+.side.notrack .mapinfo { display: none; }
+body.internal .side.notrack .mapinfo { display: flex; }
+body.internal .side.notrack .play, body.internal .side.notrack .legend { display: none; }
+.note { font-size: 12px; color: var(--muted); display: none; }
+body.internal .note { display: block; }
+
+/* ---------------------------------------------------------------- filmstrip / grid, bottom, full width */
+.strip { position: absolute; left: 0; right: 0; bottom: 0; height: var(--strip-h); display: flex; flex-direction: column;
+  border-width: 1px 0 0; border-radius: 0; transition: height .35s cubic-bezier(.3,.7,.2,1), background-color .35s; }
+.strip.open { height: calc(100% - var(--top-h)); background: var(--glass-strong); }
+.strip-head { flex: none; display: flex; align-items: center; gap: 10px; padding: 6px 12px 0 16px; min-height: 38px; }
+.drawer { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 500; padding: 5px 14px 5px 11px; }
+.drawer:hover { color: var(--accent-ink); filter: brightness(1.1); }
+.drawer .close { display: none; }
+.strip.open .drawer .grid { display: none; } .strip.open .drawer .close { display: block; }
+.handle { position: absolute; left: 50%; top: -1px; transform: translateX(-50%); width: 84px; height: 16px; border: 0; padding: 0; background: transparent; cursor: pointer; display: grid; place-items: center; }
+.handle i { width: 44px; height: 5px; border-radius: 3px; background: var(--muted); opacity: .55; transition: opacity .15s, width .15s; }
+.handle:hover i { opacity: 1; width: 56px; }
+.strip-head .sp { flex: 1; }
+input[type=search] { font: inherit; font-size: 12.5px; color: var(--ink); background: var(--field); border: 1px solid var(--line);
+  border-radius: 999px; padding: 4px 12px; width: min(220px, 100%); }
+input[type=search]::placeholder { color: var(--muted); }
+input[type=search]:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+.nav { display: inline-flex; gap: 6px; align-items: center; }
+.nav .pill { padding: 4px 10px; }
+.strip.open .nav { visibility: hidden; }
+.filters { display: none; gap: 5px; flex-wrap: wrap; }
+body.internal .filters { display: flex; }
+.filters button { font-size: 11.5px; border: 1px solid var(--line); background: var(--tile); border-radius: 999px; padding: 2px 9px; cursor: pointer; }
+.filters button[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
+
+.tiles { flex: 1; min-height: 0; display: flex; gap: 8px; padding: 6px 16px 6px; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x proximity;
+  scrollbar-width: thin; overscroll-behavior-x: contain; }
+.strip.open .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--tile-w), 1fr)); align-content: start; overflow-x: hidden; overflow-y: auto; padding-bottom: 20px; }
+/* group label (family, status): a vertical tab in the filmstrip, a heading in the grid */
+.grp { flex: none; writing-mode: vertical-rl; transform: rotate(180deg); align-self: stretch; display: flex; align-items: center; justify-content: center;
+  padding: 6px 2px; font-size: 10.5px; letter-spacing: .04em; color: var(--muted); border-left: 1px solid var(--line); margin-left: 4px; white-space: nowrap; overflow: hidden; }
+.grp b { font-weight: 600; color: var(--ink); }
+.strip.open .grp { grid-column: 1 / -1; writing-mode: horizontal-tb; transform: none; display: block; height: auto; overflow: visible; align-self: end;
+  padding: 12px 2px 0; margin: 0; border: 0; font-size: 12.5px; }
+.strip.open .grp b { margin-right: 6px; }
+.strip.open .grp:first-child { padding-top: 0; }
+.tile { position: relative; flex: none; width: var(--tile-w); border: 1px solid transparent; background: var(--tile); border-radius: 12px; padding: 4px 4px 5px; cursor: pointer;
+  text-align: center; scroll-snap-align: start; }
+.strip.open .tile { width: auto; padding: 6px 6px 8px; }
 .tile:hover { border-color: var(--line); }
 .tile[aria-current="true"] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
-.tile img { width: 100%; aspect-ratio: 4 / 3; object-fit: contain; display: block; }
-.tile .name { display: block; font-size: 12px; line-height: 1.3; margin-top: 2px; }
+.tile .pic { position: relative; display: block; width: 100%; aspect-ratio: 4 / 3; }
+.tile img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; display: block; }
+/* hover: the flapping loop floats exactly over the poster (positioned by gallery.js), unclipped by the strip */
+#floop { position: fixed; z-index: 30; pointer-events: none; display: none; }
+#floop.on { display: block; }
+.tile.play img.poster { opacity: 0; }
+.tile .name { display: none; font-size: 11.5px; line-height: 1.25; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.strip.open .tile .name { display: block; white-space: normal; font-size: 12px; }
 .tile.missing img { opacity: .5; filter: grayscale(.5); }
 .q, .tier { display: none; }
-body.internal .q { display: inline-block; font-size: 10px; letter-spacing: .04em; text-transform: uppercase; padding: 1px 6px; border-radius: 6px; color: #fff; }
-body.internal .tile .q { position: absolute; top: 6px; left: 6px; }
-body.internal .tile .tier { display: block; position: absolute; top: 6px; right: 8px; font-size: 10px; color: var(--muted); }
+body.internal .q { display: inline-block; font-size: 9.5px; letter-spacing: .04em; text-transform: uppercase; padding: 0 5px; border-radius: 6px; color: #fff; text-shadow: none; font-style: normal; font-weight: 500; }
+body.internal .tile .q { position: absolute; top: 5px; left: 5px; z-index: 1; }
+body.internal .tile .tier { display: block; position: absolute; top: 5px; right: 7px; font-size: 10px; color: var(--muted); z-index: 1; }
 .q-good { background: #2e7d4f; } .q-ok { background: #b07a12; } .q-pending { background: #3b6fb6; } .q-rerun { background: #b33a3a; } .q-missing { background: #6b7280; }
-.empty { padding: 24px 16px; color: var(--muted); display: none; }
+.empty { padding: 18px 16px; color: var(--muted); display: none; }
 
-footer { padding: 18px 16px 28px; color: var(--muted); font-size: 12px; display: flex; flex-wrap: wrap; gap: 4px 14px; }
-footer a { color: var(--muted); }
-footer a:hover { color: var(--accent); }
-@media (max-width: 640px) {
-  model-viewer, .stage .big { height: 56vh; }
-  .label { top: 12px; bottom: auto; max-width: none; right: 16px; }
-  .ctrl { left: 16px; right: 16px; bottom: 12px; justify-content: space-between; }
-  .thumb { display: none; }
-  .grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
-  input[type=search] { width: 100%; order: 5; }
+/* about & sources */
+dialog { border: 1px solid var(--line); border-radius: 18px; padding: 0; width: min(560px, calc(100vw - 32px)); max-height: calc(100dvh - 48px);
+  background: var(--glass-strong); color: var(--ink); box-shadow: 0 20px 60px rgba(0,0,0,.35); }
+dialog::backdrop { background: rgba(10, 12, 16, .35); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
+dialog .in { padding: 22px 24px 20px; overflow-y: auto; max-height: calc(100dvh - 50px); }
+dialog header { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+dialog header img { width: 64px; height: auto; }
+dialog h2 { margin: 0; font: 600 28px/1.1 var(--display); }
+dialog h2 i { font-weight: 400; }
+dialog h2 + p { margin: 2px 0 0; color: var(--muted); font-size: 12.5px; }
+dialog .x { margin-left: auto; align-self: flex-start; }
+dialog p { margin: 8px 0; font-size: 13.5px; }
+dialog h3 { font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 16px 0 6px; }
+dialog dl { display: grid; grid-template-columns: max-content 1fr; gap: 6px 14px; margin: 0; font-size: 13px; }
+dialog dt { color: var(--muted); }
+dialog dd { margin: 0; }
+dialog a { color: var(--accent); }
+
+/* ---------------------------------------------------------------- narrower screens: icons only in the header */
+@media (max-width: 1180px) {
+  .brand .tag, .xlink span { display: none; }
+  .xlink img { margin: 0; }
 }
+/* ---------------------------------------------------------------- phone: the scene fills the first screen, then the
+   filmstrip, then the map (scroll); the scene stays fixed behind */
+@media (max-width: 760px) {
+  :root { --side-w: 100%; --tile-w: 118px; --top-h: 58px; }
+  body { height: auto; overflow: visible; }
+  .top { position: absolute; padding: 0 10px; gap: 6px; }
+  .brand img { width: 36px; } .brand h1 { font-size: 21px; }
+  #about-btn, #dl, #explorer { display: none; }
+  .top .icon { width: 32px; height: 32px; }
+  #expand { padding: 4px 9px; } #exlabel { display: none; }
+  .strip-head { gap: 6px; padding: 6px 10px 0; }
+  .strip-head .sp { display: none; }
+  .strip-head input[type=search] { flex: 1; width: auto; min-width: 0; }
+  .app { position: relative; inset: auto; display: flex; flex-direction: column; }
+  .stage { order: 1; position: relative; inset: auto; height: calc(100svh - var(--strip-h)); min-height: 360px; }
+  .label { left: 14px; right: 14px; bottom: 10px; }
+  .label .en { font-size: 26px; }
+  .strip { order: 2; position: relative; height: var(--strip-h); }
+  .strip.open { position: fixed; inset: 0; height: 100%; z-index: 50; }
+  .side { order: 3; position: relative; inset: auto; width: auto; height: min(130vw, 580px); border-radius: 0; border: 0; box-shadow: none; transform: none !important; opacity: 1 !important; pointer-events: auto !important; }
+  #mapclose, #mapopen { display: none !important; }
+  .tiles { padding: 6px 12px 8px; }
+  .strip.open .tiles { grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); }
+  .nav .pill span { display: none; }
+  #c { touch-action: pan-y !important; }
+}
+@media (prefers-reduced-motion: reduce) { .strip, .side { transition: none; } }
 </style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+} }
+</script>
 </head>
-<body>
-<div class="top">
-  <h1>Bird models</h1>
+<body class="map-closed">
+<canvas id="c" aria-label="The bird flying over a habitat of its migration: drag to turn around it, scroll to zoom"></canvas>
+<div id="fade"></div>
+
+<header class="top">
+  <a class="brand" href="./" title="GeoBirdModel">
+    <img src="assets/logo.webp" alt="">
+    <span><h1>Geo<i>BirdModel</i></h1><div class="tag">3D models of tracked birds in flight</div></span>
+  </a>
   <span class="count" id="count"></span>
   <span class="sp"></span>
-  <input type="search" id="search" placeholder="Search a species" aria-label="Search a species">
-  <a class="explorer" href="https://geopressure.org/GeoLocatorExplorer/">GeoLocator Explorer ↗</a>
-</div>
+  <button class="icon" id="plain" aria-pressed="false" title="No background: the bird alone" aria-label="No background">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="14" rx="2"/><path d="M4 18 20 6"/></svg>
+  </button>
+  <a class="pill xlink" id="explorer" href="https://geopressure.org/GeoLocatorExplorer/" target="_blank" rel="noopener" title="GeoLocator Explorer: all the tracks">
+    <img src="assets/geolocatorexplorer.svg" alt=""><span>GeoLocator Explorer</span>
+  </a>
+  <a class="icon" id="dl" download title="Download this model (.glb)" aria-label="Download this model">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+  </a>
+  <button class="icon" id="about-btn" title="About and sources" aria-label="About GeoBirdModel and its sources">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5.5M12 7.6v.1"/></svg>
+  </button>
+</header>
 
-<div class="stage" id="stage">
-  <model-viewer id="mv" camera-controls auto-rotate auto-rotate-delay="3000" rotation-per-second="12deg"
-    camera-target="0m 0m 0m" camera-orbit="60deg 68deg auto" min-camera-orbit="auto 5deg auto" max-camera-orbit="auto 175deg auto"
-    field-of-view="26deg" exposure="1.05" shadow-intensity="0" interaction-prompt="none" touch-action="pan-y"></model-viewer>
-  <img class="big" id="big" alt="">
-  <div class="label">
-    <div class="en" id="en"></div>
-    <div class="sci" id="sci"></div>
-    <div class="links" id="links"></div>
-    <div class="note" id="note"></div>
-  </div>
-  <div class="ctrl">
-    <a class="thumb" id="p-sticker" target="_blank" rel="noopener" title="Source illustration (huashu-bird-sticker)"><img id="i-sticker" alt="Source illustration"></a>
-    <div class="seg" role="group" aria-label="Model">
-      <button id="v-fly" aria-pressed="true" title="Flapping model, as used in GeoLocator Explorer">In flight</button>
-      <button id="v-static" aria-pressed="false" title="The 3D model before animation">Still</button>
+<main class="app">
+  <section class="stage" id="stage">
+    <div class="msg glass" id="msg">No 3D model yet</div>
+    <span id="status"></span>
+    <div class="label">
+      <div class="en" id="en"></div>
+      <div class="sci" id="sci"></div>
     </div>
-    <a class="icon" id="dl" download title="Download this model (.glb)" aria-label="Download this model">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
-    </a>
+  </section>
+
+  <aside class="side" id="side" aria-label="Where this bird flies">
+    <header>
+      <h2>Migration <a id="track" target="_blank" rel="noopener"></a></h2>
+      <button class="icon" id="mapclose" title="Hide the map" aria-label="Hide the map">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+      </button>
+    </header>
+    <div class="mapbox" id="mapbox">
+      <canvas id="map" aria-label="Track over the habitat map: drag to pan, scroll or pinch to zoom, click a place or a habitat to fly there"></canvas>
+      <div class="mapctl">
+        <button id="zin" title="Zoom in" aria-label="Zoom in">+</button>
+        <button id="zout" title="Zoom out" aria-label="Zoom out">−</button>
+        <button id="zfit" title="Whole track" aria-label="Show the whole track">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+        </button>
+      </div>
+      <div class="mapmsg" id="mapmsg">No public track yet: click a habitat to fly over it.</div>
+    </div>
+    <div class="mapinfo">
+      <div class="play" id="play">
+        <button class="icon" id="playbtn" title="Play the migration along the track" aria-label="Play the migration">
+          <svg class="go" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l11-6.5z"/></svg>
+          <svg class="pause" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg>
+        </button>
+        <input type="range" id="prog" min="0" max="1000" value="0" aria-label="Position along the track">
+        <span id="progtxt"></span>
+      </div>
+      <div class="daynight">Scene
+        <div class="seg" id="tod" role="group" aria-label="Day or night in the scene">
+          <button data-m="day" aria-pressed="true" title="Daylight">☀ Day</button>
+          <button data-m="night" aria-pressed="false" title="Moonlight">☾ Night</button>
+          <button data-m="auto" aria-pressed="false" title="Day or night as the tracked bird flew there">As flown</button>
+        </div>
+      </div>
+      <div class="legend">
+        <span><b style="background:#e0565b"></b>breeding</span><span><b style="background:#2f8fd1;border-radius:50%"></b>wintering</span>
+        <span><i class="n"></i>night flight</span><span><i style="background:#e08a1e"></i>day</span>
+      </div>
+      <div class="note" id="note"></div>
+    </div>
+  </aside>
+  <button id="mapopen" title="Open the migration map" aria-label="Open the migration map">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4 3 6.5v13.5l6-2.5 6 2.5 6-2.5V4l-6 2.5z"/><path d="M9 4v13.5M15 6.5V20"/></svg>
+    <span>Migration map<small>track, places, ▶ play</small></span>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="m15 6-6 6 6 6"/></svg>
+  </button>
+
+  <section class="strip glass" id="strip" aria-label="Species">
+    <button class="handle" id="handle" title="Open or close all species" aria-label="Open or close all species"><i></i></button>
+    <div class="strip-head">
+      <button class="pill drawer" id="expand" aria-expanded="false" title="Open all species as a grid">
+        <svg class="grid" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.5"/></svg>
+        <svg class="close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+        <span id="exlabel">All species</span>
+      </button>
+      <input type="search" id="search" placeholder="Search a species" aria-label="Search a species">
+      <div class="filters" id="filters"></div>
+      <span class="sp"></span>
+      <div class="nav">
+        <button class="pill" id="prev" title="Previous species (←)" aria-label="Previous species"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"/></svg><span>Previous</span></button>
+        <button class="pill" id="next" title="Next species (→)" aria-label="Next species"><span>Next</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></button>
+      </div>
+    </div>
+    <div class="tiles" id="tiles"></div>
+    <div class="empty" id="empty">No species matches.</div>
+  </section>
+</main>
+<img id="floop" alt="">
+
+<dialog id="about" aria-labelledby="about-title">
+  <div class="in">
+    <header>
+      <img src="assets/logo.webp" alt="">
+      <div><h2 id="about-title">Geo<i>BirdModel</i></h2><p>3D models of tracked birds in flight · part of the <a href="https://geopressure.org/">GeoPressure</a> suite</p></div>
+      <button class="icon x" id="about-close" title="Close" aria-label="Close" autofocus>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </button>
+    </header>
+    <p>A 3D flying model of each bird species tracked with geolocators, made for the bird view of
+      <a href="https://geopressure.org/GeoLocatorExplorer/">GeoLocator Explorer</a>. Each bird flies over a habitat of its
+      migration. The map shows one tracked bird of the species, its breeding and
+      wintering sites and its long stopovers: click it to fly over another habitat, or press ▶ to follow the whole migration.
+      In the map, <b>As flown</b> shows day or night as the bird flew there; most of these birds migrate at night.</p>
+    <h3>Sources</h3>
+    <dl>
+      <dt>Species, tracks</dt><dd><a href="https://doi.org/10.5281/zenodo.18187092">Master GeoLocator Data Package</a> (Zenodo), via <a href="https://geopressure.org/GeoLocatorExplorer/">GeoLocator Explorer</a></dd>
+      <dt>Illustrations</dt><dd><a href="https://github.com/alchaincyf/huashu-bird-sticker">huashu-bird-sticker</a> by Huashu, CC BY 4.0</dd>
+      <dt>3D models</dt><dd>Generated with <a href="https://www.meshy.ai">Meshy</a> from the illustrations, rigged and animated in <a href="https://www.blender.org">Blender</a></dd>
+      <dt>Habitats</dt><dd><a href="https://ecoregions.appspot.com/">RESOLVE Ecoregions 2017</a>, Dinerstein et al. 2017, CC BY 4.0</dd>
+      <dt>Places</dt><dd>Towns, seas, deserts, ranges: <a href="https://www.naturalearthdata.com/">Natural Earth</a> (public domain)</dd>
+      <dt>Landscapes</dt><dd>Procedural scenes drawn live with <a href="https://threejs.org/">three.js</a></dd>
+    </dl>
+    <h3>Use</h3>
+    <p>Models and images are <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>: download a model with the ↓ button
+      at the top. Method and code: <a href="https://github.com/GeoPressure/bird-models">GeoPressure/bird-models</a>.</p>
   </div>
-</div>
+</dialog>
 
-<div class="chips" id="chips"></div>
-<div class="grid" id="grid"></div>
-<div class="empty" id="empty">No species matches.</div>
-
-<footer>
-  <a href="https://geopressure.org/GeoLocatorExplorer/">GeoLocator Explorer</a>
-  <span>Illustrations <a href="https://github.com/alchaincyf/huashu-bird-sticker">huashu-bird-sticker</a> (Huashu)</span>
-  <span>Species <a href="https://doi.org/10.5281/zenodo.18187092">Master GeoLocator Data Package</a></span>
-  <span>3D <a href="https://www.meshy.ai">Meshy</a> + <a href="https://www.blender.org">Blender</a></span>
-  <a href="https://github.com/GeoPressure/bird-models">Source &amp; method</a>
-  <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>
-</footer>
-
-<script>
-// Public view by default. ?internal adds what the maintainers track: status badges, notes,
-// missing and planned species, and filters by status.
-const internal = new URLSearchParams(location.search).has("internal");
-document.body.classList.toggle("internal", internal);
-const EXPLORER = "https://geopressure.org/GeoLocatorExplorer/";
-const $ = (id) => document.getElementById(id);
-const mv = $("mv"), grid = $("grid");
-let birds = [], cur = null, kind = "fly", filter = "all";
-
-function show() {
-  const fly = kind === "fly" || !cur.static;
-  const src = fly ? cur.model : cur.static;
-  if (mv.src !== new URL(src, location.href).href) mv.src = src;
-  mv.animationName = fly ? "Fly" : null;
-  if (fly) mv.play(); else mv.pause();
-  $("v-fly").setAttribute("aria-pressed", String(fly));
-  $("v-static").setAttribute("aria-pressed", String(!fly));
-  $("v-static").disabled = !cur.static;
-  $("dl").href = src;
-}
-function select(b, scroll) {
-  cur = b;
-  const miss = !b.model;
-  $("stage").classList.toggle("missing", miss);
-  if (miss) $("big").src = b.sticker;
-  $("en").textContent = b.english_name;
-  $("sci").textContent = b.scientific_name;
-  const n = +b.n_tags || 0;
-  $("links").innerHTML = b.tag_id
-    ? `<a href="${EXPLORER}tag/${encodeURIComponent(b.tag_id)}" target="_blank" rel="noopener">See it in GeoLocator Explorer ↗</a>`
-      + (n ? `<span style="color:var(--muted)">${n} tracked ${n === 1 ? "bird" : "birds"}</span>` : "")
-    : "";
-  $("note").innerHTML = internal
-    ? `<span class="q q-${b.quality}">${b.quality}</span> ${[b.tier ? (b.tier === "P" ? "planned (GeoCollab)" : "tier " + b.tier) : "", b.quality_notes || ""].filter(Boolean).join(" · ")}`
-    : "";
-  $("i-sticker").src = $("p-sticker").href = b.sticker;
-  if (!miss) show();
-  grid.querySelectorAll(".tile").forEach((t) => t.setAttribute("aria-current", String(t.dataset.sci === b.scientific_name)));
-  history.replaceState(null, "", location.search + "#" + b.scientific_name.replace(/ /g, "_"));
-  document.title = `${b.english_name} · Bird Models`;
-  if (scroll) window.scrollTo({ top: 0, behavior: "smooth" });
-}
-function render() {
-  const q = $("search").value.trim().toLowerCase();
-  const list = birds.filter((b) => (filter === "all" || b.quality === filter || (filter === "planned" && b.tier === "P"))
-    && (!q || b.english_name.toLowerCase().includes(q) || b.scientific_name.toLowerCase().includes(q)));
-  grid.innerHTML = list.map((b) => `<button class="tile${b.model ? "" : " missing"}" data-sci="${b.scientific_name}" title="${b.scientific_name}">
-      <span class="q q-${b.quality}">${b.quality}</span><span class="tier">${b.tier === "P" ? "planned" : b.tier ? "T" + b.tier : ""}</span>
-      <img src="${b.poster || b.sticker}" alt="" loading="lazy"><span class="name">${b.english_name}</span></button>`).join("");
-  $("empty").style.display = list.length ? "none" : "block";
-  if (cur) grid.querySelectorAll(".tile").forEach((t) => t.setAttribute("aria-current", String(t.dataset.sci === cur.scientific_name)));
-}
-$("v-fly").onclick = () => { kind = "fly"; show(); };
-$("v-static").onclick = () => { kind = "static"; show(); };
-$("search").oninput = render;
-grid.addEventListener("click", (e) => {
-  const t = e.target.closest(".tile");
-  if (t) select(birds.find((b) => b.scientific_name === t.dataset.sci), true);
-});
-mv.addEventListener("load", () => { if (kind === "fly") mv.play(); });
-
-Promise.all([fetch("gallery.json", { cache: "no-store" }).then((r) => r.json()), customElements.whenDefined("model-viewer")]).then(([d]) => {
-  const order = { good: 0, ok: 1, pending: 2, rerun: 3, missing: 4 };
-  birds = d.birds.filter((b) => internal || b.model)
-    .sort((a, b) => internal ? ((order[a.quality] ?? 5) - (order[b.quality] ?? 5) || a.english_name.localeCompare(b.english_name))
-                             : a.english_name.localeCompare(b.english_name));
-  const done = d.birds.filter((b) => b.model).length;
-  $("count").textContent = internal
-    ? `${done}/${d.birds.length} species modelled · ${d.birds.filter((b) => b.quality === "good" || b.quality === "ok").length} released`
-    : `${done} species`;
-  if (internal) {
-    const groups = ["all", "good", "ok", "pending", "rerun", "missing", "planned"];
-    $("chips").innerHTML = groups.map((g) => {
-      const n = g === "all" ? birds.length : birds.filter((b) => b.quality === g || (g === "planned" && b.tier === "P")).length;
-      return `<button data-f="${g}" aria-pressed="${g === filter}">${g} (${n})</button>`;
-    }).join("");
-    $("chips").onclick = (e) => {
-      const c = e.target.closest("button"); if (!c) return;
-      filter = c.dataset.f; $("chips").querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", String(x === c))); render();
-    };
-  }
-  render();
-  const h = decodeURIComponent(location.hash.slice(1)).replace(/_/g, " ");
-  const withModel = birds.filter((b) => b.model);
-  select(birds.find((b) => b.scientific_name === h) || withModel[Math.floor(Math.random() * withModel.length)], false);
-});
-</script>
+<script type="module" src="scenes/main.js"></script>
+<script type="module" src="scenes/gallery.js"></script>
 </body>
 </html>

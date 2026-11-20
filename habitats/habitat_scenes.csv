@@ -1,0 +1,19 @@
+habitat,label,biome_num,colour,scene,fit,notes
+desert,Desert,13,#e6cf9c,sahara,good,Sahara and Arabian deserts; dunes and regs
+trop_savanna,Savanna,7,#cfc66f,kenya,good,Sahel and East/southern African savanna and miombo
+trop_dry_forest,Dry tropical forest,2,#a9b35c,kenya,fair,dry woodland; savanna scene is the closest
+trop_moist_forest,Rainforest,1,#2f7d3a,congo,good,
+trop_conifer,Tropical pine forest,3,#4f8a5b,congo,poor,Mexican/Central American pine-oak forest; no species so far
+flooded_grassland,Wetland,9,#82bfae,wetland,good,Inner Niger delta / Sudd / Okavango floodplains
+mangroves,Mangroves,14,#3e8f7a,congo,poor,no species so far
+mediterranean,Mediterranean,12,#bdae6c,mediterranean,good,"olive groves, maquis, white villages"
+temperate_broadleaf,Farmland & forest,4,#86ad62,farmland,good,in Europe largely farmland with woods and hedgerows
+temperate_conifer,Conifer forest,5,#4c7a55,alps,fair,"mostly mountain forest for our species (Alps, Pyrenees)"
+temperate_grassland,Steppe,8,#d8d49a,steppe,good,
+boreal,Taiga,6,#5d7f6a,taiga,good,
+tundra,Tundra,11,#c2cbbf,tundra,good,
+montane_grassland,Highlands,10,#ab9f86,alps,fair,"Ethiopian highlands, Tibetan plateau, alpine meadows"
+rock_ice,Rock & ice,98,#f2f4f5,alps,good,
+urban,City,97,#8d8a86,city,good,Natural Earth urban areas
+lake,Lake,0,#7fb0d6,sea,fair,"large lakes (Victoria, Chad)"
+sea,Sea,99,#a9c9e6,sea,good,

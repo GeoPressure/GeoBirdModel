@@ -1,0 +1,275 @@
+"scientific_name","barrier","type","km_per_tag","night_share","n_tags_with"
+"Acrocephalus arundinaceus","Sahara","desert",1741,0.9,32
+"Acrocephalus arundinaceus","Libyan Desert","desert",1534,0.91,23
+"Acrocephalus arundinaceus","Mediterranean Sea","sea",789,0.78,32
+"Acrocephalus arundinaceus","Ténéré","desert",341,0.71,14
+"Acrocephalus arundinaceus","Western Desert","desert",284,0.83,14
+"Acrocephalus arundinaceus","Aegean Sea","sea",218,1,19
+"Acrocephalus arundinaceus","Sarïr Kalanshiyu ar Ramli al Kabi","desert",201,0.81,12
+"Acrocephalus arundinaceus","Dinaric Alps","mountains",136,1,11
+"Acrocephalus arundinaceus","Chaîne des Mongos","mountains",128,1,12
+"Acrocephalus arundinaceus","Balkan Mts.","mountains",120,1,21
+"Acrocephalus arundinaceus","Sea of Crete","sea",111,1,18
+"Acrocephalus arundinaceus","Tibesti Mts.","mountains",105,0.99,10
+"Acrocephalus arundinaceus","Adriatic Sea","sea",104,0.98,11
+"Acrocephalus arundinaceus","Tyrrhenian Sea","sea",97,0.95,10
+"Acrocephalus arundinaceus","Ionian Sea","sea",96,0.8,10
+"Acrocephalus arundinaceus","Red Sea","sea",84,0.82,8
+"Acrocephalus schoenobaenus","Sahara","desert",3949,0.86,6
+"Acrocephalus schoenobaenus","North Atlantic Ocean","sea",1292,0.81,6
+"Acrocephalus schoenobaenus","Bay of Biscay","sea",819,0.95,6
+"Acrocephalus schoenobaenus","El Djouf","desert",524,0.77,5
+"Acrocephalus schoenobaenus","Atlas Mountains","mountains",332,0.98,6
+"Acrocephalus schoenobaenus","Trarza","desert",285,1,4
+"Acrocephalus schoenobaenus","Cord. Cantábrica","mountains",206,0.94,6
+"Acrocephalus schoenobaenus","Hamada du Drâa","desert",164,1,4
+"Acrocephalus schoenobaenus","Alboran Sea","sea",162,1,4
+"Acrocephalus schoenobaenus","Anti Atlas","mountains",143,0.98,5
+"Acrocephalus schoenobaenus","Er Rif","mountains",131,0.98,4
+"Anthus campestris","Sahara","desert",1767,0.71,7
+"Anthus campestris","Atlas Mountains","mountains",426,0.64,7
+"Anthus campestris","North Atlantic Ocean","sea",416,0.66,5
+"Anthus campestris","Trarza","desert",302,0.63,6
+"Anthus campestris","El Djouf","desert",277,0.65,4
+"Anthus campestris","Hamada du Drâa","desert",258,0.82,6
+"Anthus campestris","Anti Atlas","mountains",161,0.76,6
+"Anthus campestris","Pyrenees","mountains",133,0.69,7
+"Anthus campestris","Erzgebirge","mountains",117,0.79,7
+"Anthus campestris","Sierra Morena","mountains",111,0.69,5
+"Anthus campestris","Alps","mountains",101,0.28,1
+"Anthus campestris","Balearic Sea","sea",101,0.02,2
+"Anthus campestris","Alboran Sea","sea",96,0.94,4
+"Anthus pratensis","Bay of Biscay","sea",985,0.11,1
+"Anthus pratensis","Cord. Cantábrica","mountains",181,0.21,1
+"Anthus pratensis","North Atlantic Ocean","sea",158,0,1
+"Anthus trivialis","Sahara","desert",1984,0.61,2
+"Anthus trivialis","North Atlantic Ocean","sea",1419,0.68,2
+"Anthus trivialis","El Djouf","desert",458,0,2
+"Anthus trivialis","Bay of Biscay","sea",436,0.52,2
+"Anthus trivialis","Hamada du Drâa","desert",358,0.89,2
+"Anthus trivialis","English Channel","sea",343,0.74,2
+"Anthus trivialis","Trarza","desert",285,0.69,2
+"Anthus trivialis","Atlas Mountains","mountains",223,0.84,2
+"Anthus trivialis","Anti Atlas","mountains",147,1,2
+"Anthus trivialis","Cord. Cantábrica","mountains",116,0.74,2
+"Anthus trivialis","Haut Atlas","mountains",107,1,2
+"Calliope calliope","Chaîne Annamitique","mountains",619,0.94,6
+"Calliope calliope","Gulf of Tonkin","sea",463,1,3
+"Calliope calliope","Qinling Mountains","mountains",303,1,6
+"Calliope calliope","Quilian Mountains","mountains",207,1,6
+"Calliope calliope","Dalou Mts.","mountains",203,1,5
+"Calliope calliope","Dângrêk Ra.","mountains",120,1,4
+"Caprimulgus europaeus","Drakensberg","mountains",818,0.99,2
+"Caprimulgus europaeus","Altay Mountains","mountains",792,0.98,3
+"Caprimulgus europaeus","Rub’ Al Khali","desert",573,1,3
+"Caprimulgus europaeus","Alataw Mts.","mountains",505,1,3
+"Caprimulgus europaeus","Sahara","desert",499,1,1
+"Caprimulgus europaeus","Gulf of Aden","sea",405,1,3
+"Caprimulgus europaeus","Indian Ocean","sea",396,0.99,3
+"Caprimulgus europaeus","Hadhramaut","mountains",394,1,3
+"Caprimulgus europaeus","Arabian Sea","sea",327,1,2
+"Caprimulgus europaeus","Garagum Desert","desert",325,1,1
+"Caprimulgus europaeus","Hentiyn Mts.","mountains",313,0.98,3
+"Caprimulgus europaeus","Betpaqdala Desert","desert",304,1,2
+"Caprimulgus europaeus","Hangayn Mts.","mountains",275,1,1
+"Caprimulgus europaeus","Qizilqum Desert","desert",227,1,2
+"Caprimulgus europaeus","Mozambique Channel","sea",224,1,2
+"Caprimulgus europaeus","Gulf of Oman","sea",185,1,3
+"Caprimulgus europaeus","Ogo Mts.","mountains",138,1,3
+"Caprimulgus europaeus","Crystal Mountains","mountains",131,1,1
+"Caprimulgus europaeus","Paropamisus Ra.","mountains",127,1,3
+"Caprimulgus europaeus","Lake Malawi","lake",117,0.94,3
+"Cossypha natalensis","Indian Ocean","sea",578,1,13
+"Curruca communis","Sahara","desert",2952,0.93,4
+"Curruca communis","North Atlantic Ocean","sea",858,0.78,4
+"Curruca communis","Trarza","desert",570,0.87,4
+"Curruca communis","Bay of Biscay","sea",561,0.97,4
+"Curruca communis","Atlas Mountains","mountains",512,0.89,4
+"Curruca communis","El Djouf","desert",302,0.62,2
+"Curruca communis","Anti Atlas","mountains",262,1,3
+"Curruca communis","Akchâr","desert",162,1,2
+"Curruca communis","Hamada du Drâa","desert",161,1,3
+"Curruca communis","Er Rif","mountains",127,0.65,2
+"Curruca communis","Balearic Sea","sea",117,1,2
+"Curruca nisoria","Libyan Desert","desert",1118,1,2
+"Curruca nisoria","Nubian Desert","desert",459,1,2
+"Curruca nisoria","Syrian Desert","desert",359,1,2
+"Curruca nisoria","Hejaz Mts.","mountains",324,1,2
+"Curruca nisoria","Red Sea","sea",282,1,2
+"Curruca nisoria","Ethiopian Highlands","mountains",185,1,1
+"Curruca nisoria","Sahara","desert",185,1,2
+"Curruca nisoria","Balkan Mts.","mountains",165,1,2
+"Curruca nisoria","Chalbi Desert","desert",164,1,1
+"Curruca nisoria","Taurus Mts.","mountains",118,1,2
+"Curruca nisoria","Mediterranean Sea","sea",117,1,2
+"Curruca nisoria","Sea of Marmara","sea",89,1,2
+"Curruca nisoria","Lake Turkana","lake",59,1,1
+"Halcyon senegalensis","Mitumba Mts.","mountains",142,1,2
+"Halcyon senegalensis","Muchinga Mts.","mountains",133,1,5
+"Halcyon senegalensis","Lake Tanganyika","lake",132,0.85,1
+"Halcyon senegaloides","Indian Ocean","sea",584,1,5
+"Lanius collurio","Libyan Desert","desert",1493,0.94,9
+"Lanius collurio","Mediterranean Sea","sea",605,0.84,10
+"Lanius collurio","Western Desert","desert",262,0.99,6
+"Lanius collurio","Carpathian Mountains","mountains",257,0.96,7
+"Lanius collurio","Ethiopian Highlands","mountains",239,0.98,4
+"Lanius collurio","Aegean Sea","sea",218,1,8
+"Lanius collurio","Baltic Sea","sea",213,0.96,9
+"Lanius collurio","Kalahari Desert","desert",195,1,4
+"Lanius collurio","Sahara","desert",182,1,5
+"Lanius collurio","Mitumba Mts.","mountains",181,0.99,6
+"Lanius collurio","Chalbi Desert","desert",167,0.99,5
+"Lanius collurio","Dinaric Alps","mountains",156,0.99,6
+"Lanius collurio","Danakil","desert",154,0.99,5
+"Lanius collurio","Eastern Desert","desert",153,1,3
+"Lanius collurio","Sea of Crete","sea",118,1,8
+"Lanius collurio","Transylvanian Alps","mountains",112,0.98,7
+"Lanius collurio","Red Sea","sea",112,0.67,5
+"Lanius collurio","Balkan Mts.","mountains",101,0.98,7
+"Lanius collurio","Marrah Mts.","mountains",101,0.94,3
+"Lanius minor","Sahara","desert",1415,0.82,1
+"Lanius minor","Sarïr Kalanshiyu ar Ramli al Kabi","desert",659,0.76,1
+"Lanius minor","Ténéré","desert",587,0.9,1
+"Lanius minor","Muchinga Mts.","mountains",553,1,1
+"Lanius minor","Tibesti Mts.","mountains",512,1,1
+"Lanius minor","Mediterranean Sea","sea",434,0.5,1
+"Lanius minor","Syrian Desert","desert",414,1,1
+"Lanius minor","Rub’ Al Khali","desert",398,1,1
+"Lanius minor","Libyan Desert","desert",359,0.72,1
+"Lanius minor","Taurus Mts.","mountains",325,1,1
+"Lanius minor","Gulf of Aden","sea",292,1,1
+"Lanius minor","Carpathian Mountains","mountains",231,1,1
+"Lanius minor","Kalahari Desert","desert",214,1,1
+"Lanius minor","Dinaric Alps","mountains",210,1,1
+"Lanius minor","Ionian Sea","sea",158,1,1
+"Lanius minor","Pindus Mts.","mountains",155,1,1
+"Lanius minor","Transylvanian Alps","mountains",134,1,1
+"Lanius minor","Balkan Mts.","mountains",118,1,1
+"Lanius minor","Ogo Mts.","mountains",117,1,1
+"Limnothlypis swainsonii","Gulf of Mexico","sea",1206,0.56,13
+"Limnothlypis swainsonii","Blue Ridge","mountains",215,0.96,6
+"Limnothlypis swainsonii","Appalachian Mts.","mountains",162,0.91,6
+"Limnothlypis swainsonii","North Atlantic Ocean","sea",137,0.9,7
+"Limnothlypis swainsonii","Straits of Florida","sea",134,0.68,7
+"Luscinia luscinia","Ethiopian Highlands","mountains",798,0.96,11
+"Luscinia luscinia","Mediterranean Sea","sea",742,0.82,11
+"Luscinia luscinia","Eastern Desert","desert",625,0.98,10
+"Luscinia luscinia","Sahara","desert",583,0.97,11
+"Luscinia luscinia","Libyan Desert","desert",366,0.97,7
+"Luscinia luscinia","Nubian Desert","desert",318,0.99,11
+"Luscinia luscinia","Chalbi Desert","desert",311,0.98,11
+"Luscinia luscinia","Baltic Sea","sea",237,1,11
+"Luscinia luscinia","Aegean Sea","sea",230,1,9
+"Luscinia luscinia","Hejaz Mts.","mountains",230,0.99,4
+"Luscinia luscinia","Western Desert","desert",219,0.98,6
+"Luscinia luscinia","Carpathian Mountains","mountains",198,1,7
+"Luscinia luscinia","Red Sea","sea",177,0.99,5
+"Luscinia luscinia","Dinaric Alps","mountains",154,0.98,6
+"Luscinia luscinia","Balkan Mts.","mountains",124,1,8
+"Luscinia luscinia","Muchinga Mts.","mountains",100,0.98,2
+"Luscinia luscinia","Lake Malawi","lake",91,1,6
+"Luscinia megarhynchos","Sahara","desert",2432,0.94,6
+"Luscinia megarhynchos","North Atlantic Ocean","sea",1163,0.97,6
+"Luscinia megarhynchos","Atlas Mountains","mountains",408,0.81,6
+"Luscinia megarhynchos","Bay of Biscay","sea",310,0.93,5
+"Luscinia megarhynchos","Trarza","desert",273,0.99,6
+"Luscinia megarhynchos","Cord. Cantábrica","mountains",248,0.96,5
+"Luscinia megarhynchos","Anti Atlas","mountains",168,1,4
+"Luscinia megarhynchos","‘Erg Chech","desert",162,0.9,2
+"Luscinia megarhynchos","English Channel","sea",114,1,4
+"Luscinia svecica","Bay of Biscay","sea",369,1,1
+"Luscinia svecica","Cord. Cantábrica","mountains",181,1,1
+"Luscinia svecica","Sierra Morena","mountains",174,1,1
+"Motacilla flava","Sahara","desert",2324,0.56,6
+"Motacilla flava","Atlas Mountains","mountains",746,0.49,6
+"Motacilla flava","North Atlantic Ocean","sea",694,0.61,5
+"Motacilla flava","Bay of Biscay","sea",528,0.59,5
+"Motacilla flava","Trarza","desert",521,0.72,5
+"Motacilla flava","Anti Atlas","mountains",301,0.63,6
+"Motacilla flava","Hamada du Drâa","desert",275,0.76,6
+"Motacilla flava","Sierra Morena","mountains",133,0.66,6
+"Motacilla flava","Mediterranean Sea","sea",115,0.6,1
+"Motacilla flava","Haut Atlas","mountains",112,0.23,5
+"Motacilla flava","Cord. Cantábrica","mountains",107,0.24,5
+"Muscicapa striata","Sahara","desert",3021,0.88,4
+"Muscicapa striata","Crystal Mountains","mountains",1186,1,4
+"Muscicapa striata","Kalahari Desert","desert",1026,1,4
+"Muscicapa striata","North Atlantic Ocean","sea",1005,0.61,4
+"Muscicapa striata","Gulf of Guinea","sea",949,1,4
+"Muscicapa striata","Guinea Highlands","mountains",906,0.99,4
+"Muscicapa striata","Atlas Mountains","mountains",615,0.92,4
+"Muscicapa striata","English Channel","sea",376,0.92,4
+"Muscicapa striata","Loma Mts.","mountains",354,1,4
+"Muscicapa striata","El Djouf","desert",284,1,4
+"Muscicapa striata","Trarza","desert",232,1,4
+"Muscicapa striata","Anti Atlas","mountains",231,0.8,4
+"Muscicapa striata","Pyrenees","mountains",216,0.82,4
+"Muscicapa striata","Bight of Biafra","sea",178,1,4
+"Muscicapa striata","Bay of Biscay","sea",157,0.69,3
+"Muscicapa striata","Hamada du Drâa","desert",157,1,3
+"Muscicapa striata","Haut Atlas","mountains",157,1,4
+"Muscicapa striata","Bight of Benin","sea",154,1,3
+"Muscicapa striata","Sierra Morena","mountains",111,1,4
+"Muscicapa striata","Alboran Sea","sea",103,0.91,2
+"Muscicapa striata","Atlas Tellien","mountains",103,0.91,3
+"Muscicapa striata","South Atlantic Ocean","sea",83,1,2
+"Oenanthe hispanica","Sahara","desert",2010,0.84,3
+"Oenanthe hispanica","El Djouf","desert",525,0.95,3
+"Oenanthe hispanica","Atlas Mountains","mountains",454,1,3
+"Oenanthe hispanica","‘Erg Chech","desert",290,0.95,1
+"Oenanthe hispanica","Mediterranean Sea","sea",213,1,2
+"Oenanthe hispanica","Haut Atlas","mountains",196,0.93,3
+"Oenanthe hispanica","Atlas Tellien","mountains",175,0.93,3
+"Oenanthe hispanica","Hamada du Drâa","desert",164,1,3
+"Oenanthe hispanica","Anti Atlas","mountains",152,1,2
+"Oenanthe hispanica","Alboran Sea","sea",145,1,3
+"Oenanthe hispanica","Moyen Atlas","mountains",113,1,2
+"Oenanthe hispanica","Balearic Sea","sea",111,1,1
+"Oenanthe oenanthe","Sahara","desert",2727,0.95,25
+"Oenanthe oenanthe","Atlas Mountains","mountains",673,0.96,26
+"Oenanthe oenanthe","Bay of Biscay","sea",498,0.95,15
+"Oenanthe oenanthe","North Atlantic Ocean","sea",328,0.94,11
+"Oenanthe oenanthe","Mediterranean Sea","sea",312,0.81,12
+"Oenanthe oenanthe","Trarza","desert",279,1,11
+"Oenanthe oenanthe","Anti Atlas","mountains",216,0.97,15
+"Oenanthe oenanthe","Hamada du Drâa","desert",196,0.95,15
+"Oenanthe oenanthe","El Djouf","desert",179,0.89,6
+"Oenanthe oenanthe","Alps","mountains",174,0.85,13
+"Oenanthe oenanthe","English Channel","sea",133,0.99,9
+"Oenanthe oenanthe","Er Rif","mountains",127,0.99,16
+"Oenanthe oenanthe","Alboran Sea","sea",115,0.99,13
+"Oenanthe oenanthe","Haut Atlas","mountains",112,0.95,16
+"Plectrophenax nivalis","Barents Sea","sea",2655,0.29,4
+"Plectrophenax nivalis","Ural Mountains","mountains",1024,0.45,3
+"Plectrophenax nivalis","White Sea","sea",147,0.94,2
+"Plectrophenax nivalis","Storfjorden","sea",99,0.45,4
+"Setophaga coronata","Selwyn Mts.","mountains",592,0.69,5
+"Setophaga coronata","Chugach Mts.","mountains",551,0.51,6
+"Setophaga coronata","Appalachian Mts.","mountains",549,0.87,4
+"Setophaga coronata","Cassiar Mts.","mountains",279,0,5
+"Setophaga coronata","Lake Michigan","lake",236,1,2
+"Setophaga coronata","Wrangell Mts.","mountains",174,0.68,5
+"Setophaga coronata","Mackenzie Mts.","mountains",155,1,5
+"Setophaga coronata","Rocky Mountains","mountains",153,1,3
+"Setophaga coronata","Birch Mts.","mountains",146,0,4
+"Setophaga coronata","Ouachita Mts.","mountains",109,0.86,2
+"Setophaga coronata","Lake Superior","lake",76,1,1
+"Turdus iliacus","North Atlantic Ocean","sea",2389,0.7,2
+"Turdus iliacus","Inner Seas","sea",175,0.49,2
+"Turdus torquatus","Alps","mountains",582,0.96,5
+"Turdus torquatus","Alboran Sea","sea",264,0.99,4
+"Turdus torquatus","Haut Atlas","mountains",231,0.98,3
+"Turdus torquatus","Pyrenees","mountains",221,0.95,5
+"Turdus torquatus","Moyen Atlas","mountains",173,1,3
+"Turdus torquatus","Er Rif","mountains",158,1,4
+"Turdus torquatus","S. Nevada","mountains",153,0.97,3
+"Turdus torquatus","Atlas Mountains","mountains",119,1,4
+"Upupa epops","Sahara","desert",3111,0.97,28
+"Upupa epops","Mediterranean Sea","sea",767,0.65,23
+"Upupa epops","Atlas Mountains","mountains",524,0.95,26
+"Upupa epops","Alps","mountains",417,1,24
+"Upupa epops","El Djouf","desert",231,0.95,14
+"Upupa epops","‘Erg Chech","desert",189,0.96,16
+"Upupa epops","Ahaggar Mts.","mountains",166,0.99,16
+"Upupa epops","Atlas Tellien","mountains",135,0.95,18
+"Upupa epops","Tyrrhenian Sea","sea",115,0.92,10
