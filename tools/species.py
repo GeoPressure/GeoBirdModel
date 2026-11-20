@@ -76,13 +76,15 @@ def main():
     for t in tags:
         per_package[t["datapackage_id"]][binomial(t["scientific_name"])] += 1
 
-    # one example tag per species (from an open package if possible) for a link to GeoLocator Explorer
+    # one example tag per species for a link to GeoLocator Explorer: only tags the Explorer shows
+    # (its data/tags.json; the Master's tag ids are not all there)
     example = {}
-    for t in tags:
-        sp = binomial(t["scientific_name"])
-        is_open = packages.get(t["datapackage_id"], {}).get("access_status", "") == "open"
-        if sp not in example or (is_open and not example[sp][1]):
-            example[sp] = (t["tag_id"], is_open)
+    try:
+        ex = json.load(urllib.request.urlopen("https://geopressure.org/GeoLocatorExplorer/data/tags.json", timeout=30))
+        for t in ex:
+            example.setdefault(binomial(t.get("scientific_name", "")), (t["tag_id"], True))
+    except Exception as e:  # offline: no links
+        print(f"note: GeoLocator Explorer tag list not available ({e})", file=sys.stderr)
     tier, ntags = {}, Counter()
     for pid, counts in per_package.items():
         access = packages.get(pid, {}).get("access_status", "")
