@@ -1,0 +1,30 @@
+scientific_name,season,lon,lat,town,country,habitat,source
+Acrocephalus orientalis,breeding,128.0,45.3,Songhua river wetlands,China,Wetland,typical breeding range (reedbeds)
+Acrocephalus stentoreus,breeding,47.0,31.0,Mesopotamian Marshes,Iraq,Wetland,typical breeding range (reedbeds)
+Arundinax aedon,breeding,131.0,48.5,Amur valley,Russia,Taiga,typical breeding range (taiga edge scrub)
+Caprimulgus climacurus,breeding,-15.3,13.4,Gambia river,The Gambia,Savanna,GeoCollab study site (CamClimGM)
+Caprimulgus jotaka,breeding,138.3,36.2,Nagano,Japan,Farmland & forest,typical breeding range
+Caprimulgus pectoralis,breeding,28.3,-15.4,Lusaka,Zambia,Dry tropical forest,GeoCollab study site (CapPecZM)
+Caprimulgus vexillarius,breeding,28.6,-13.0,Copperbelt,Zambia,Dry tropical forest,GeoCollab study site (CapVexZM)
+Carpodacus erythrinus,breeding,24.9,60.4,Helsinki,Finland,Farmland & forest,typical breeding range
+Chamaetylas fuelleborni,resident,35.8,-7.8,Udzungwa Mountains,Tanzania,Rainforest,typical range (montane forest)
+Emberiza citrinella,breeding,7.4,46.9,Bern,Switzerland,Farmland & forest,typical breeding range
+Emberiza schoeniclus,breeding,5.4,52.6,IJsselmeer reedbeds,Netherlands,Wetland,typical breeding range (reedbeds)
+Emberiza spodocephala,breeding,132.0,43.6,Primorye,Russia,Farmland & forest,typical breeding range
+Eremophila alpestris,breeding,25.0,45.5,Bucegi Mountains,Romania,Highlands,GeoCollab study site (EreAlpRO)
+Geokichla guttata,breeding,27.9,-33.0,East London,South Africa,Rainforest,GeoCollab study site (GeoGutZA; coastal forest)
+Hirundo rustica,breeding,8.5,47.4,Zurich,Switzerland,Farmland & forest,typical breeding range
+Iduna pallida,breeding,28.6,44.4,Dobrogea,Romania,Steppe,GeoCollab study site (Romania)
+Ispidina picta,breeding,28.3,-15.2,Lusaka,Zambia,Savanna,GeoCollab study site (Zambia)
+Locustella luscinioides,breeding,-1.65,47.1,Lac de Grand-Lieu,France,Wetland,GeoCollab study site (LocLusFR; reedbeds)
+Lymnocryptes minimus,wintering,8.5,53.3,Weser marshes,Germany,Wetland,GeoCollab study sites (DE/FR/IT/SL; wintering wetlands)
+Melanodera xanthogramma,breeding,-71.3,-41.1,Bariloche Andes,Argentina,Highlands,GeoCollab study site (MelXanAR)
+Oenanthe isabellina,breeding,68.5,48.0,Betpak-Dala steppe,Kazakhstan,Steppe,typical breeding range
+Otus scops,breeding,-4.8,37.9,Córdoba,Spain,Mediterranean,GeoCollab study site (OtuScoES)
+Turdus philomelos,breeding,8.5,47.4,Zurich,Switzerland,Farmland & forest,typical breeding range
+Tyrannus savana,breeding,-58.5,-35.2,Pampas,Argentina,Steppe,GeoCollab study site (TyrSavAR)
+Terpsiphone paradisi,breeding,84.4,27.6,Chitwan,Nepal,Rainforest,GeoCollab proposal site (Nepal)
+Muscicapa ferruginea,breeding,90.4,27.4,Bumthang,Bhutan,Highlands,GeoCollab proposal site (Bhutan; montane forest)
+Larvivora brunnea,breeding,79.1,30.4,Garhwal Himalaya,India,Highlands,typical breeding range (montane forest)
+Jynx torquilla,breeding,7.6,47.5,Basel orchards,Switzerland,Farmland & forest,typical breeding range
+Cercotrichas galactotes,breeding,-5.9,37.4,Seville,Spain,Mediterranean,GeoCollab proposal site (Spain)

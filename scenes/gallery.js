@@ -189,7 +189,7 @@ async function select(b, { collapse = false } = {}) {
   map.set(sp);
   $('mapbox').classList.toggle('notrack', !sp); $('side').classList.toggle('notrack', !sp);
   const tr = $('track');
-  if (sp) { tr.textContent = `track ${sp.tag_id} ↗`; tr.href = `${EXPLORER}tag/${encodeURIComponent(sp.tag_id)}`; tr.title = `This ${b.english_name} in GeoLocator Explorer`; }
+  if (sp?.tag_id) { tr.textContent = `track ${sp.tag_id} ↗`; tr.href = `${EXPLORER}tag/${encodeURIComponent(sp.tag_id)}`; tr.title = `This ${b.english_name} in GeoLocator Explorer`; }
   else if (b.tag_id) { tr.textContent = `GeoLocator Explorer ↗`; tr.href = `${EXPLORER}tag/${encodeURIComponent(b.tag_id)}`; tr.title = ''; }
   else { tr.textContent = ''; tr.removeAttribute('href'); }
   setupPlay();

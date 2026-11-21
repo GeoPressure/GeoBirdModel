@@ -237,8 +237,11 @@ export class HabitatMap {
   showTip(h, x, y) {
     const t = this.tip;
     if (!h) { t.classList.remove('on'); return; }
-    const p = h.pl, KIND = { breeding: 'breeding site', wintering: 'wintering site', stopover: 'stopover' };
-    t.textContent = h.kind === 'place' ? `${p.town || p.country || ''} · ${KIND[p.kind]}, ${Math.round(p.days)} days`
+    const p = h.pl, KIND = { breeding: 'breeding site', wintering: 'wintering site', stopover: 'stopover', resident: 'resident' };
+    // species without a track: a hand-placed area (habitats/manual_species.csv), no duration
+    t.textContent = h.kind === 'place' ? (p.manual
+      ? `${p.town || p.country || ''} · typical ${p.kind === 'resident' ? 'range' : p.kind + ' area'} (no track yet)`
+      : `${p.town || p.country || ''} · ${KIND[p.kind]}, ${Math.round(p.days)} days`)
       : h.kind === 'landmark' ? h.lm.name : h.h?.label || '';
     t.style.left = x + 'px'; t.style.top = y + 'px';
     t.classList.toggle('on', !!t.textContent);
@@ -352,7 +355,7 @@ export class HabitatMap {
       g.beginPath(); g.arc(x, y, on ? r + 1.2 : r, 0, 2 * Math.PI);
       g.fillStyle = fill; g.fill(); g.lineWidth = on ? 2.2 : 1.6; g.strokeStyle = INK; g.stroke();
     };
-    const RANK = { breeding: 0, wintering: 1, stopover: 2 };
+    const RANK = { breeding: 0, resident: 0, wintering: 1, stopover: 2 };
     const places = [...sp.places].sort((a, b) => (isSel(b) - isSel(a)) || (RANK[a.kind] - RANK[b.kind]) || (b.days - a.days));
     const lms = [...sp.landmarks].sort((a, b) => (isSel(b) - isSel(a)) || (b.km - a.km));
     // pins first (all visible), labels after so the important ones win the space
@@ -361,9 +364,9 @@ export class HabitatMap {
       if (p.kind === 'stopover') pin(x, y, 4.5, on, '#fff');
       else {   // breeding: house-like square, wintering: filled circle
         g.save(); g.translate(x, y);
-        if (p.kind === 'breeding') { g.beginPath(); g.rect(-5, -5, 10, 10); } else { g.beginPath(); g.arc(0, 0, 6, 0, 2 * Math.PI); }
+        if (p.kind === 'breeding' || p.kind === 'resident') { g.beginPath(); g.rect(-5, -5, 10, 10); } else { g.beginPath(); g.arc(0, 0, 6, 0, 2 * Math.PI); }
         if (on) g.scale(1.2, 1.2);
-        g.fillStyle = p.kind === 'breeding' ? '#e0565b' : '#2f8fd1'; g.fill();
+        g.fillStyle = p.kind === 'breeding' || p.kind === 'resident' ? '#e0565b' : '#2f8fd1'; g.fill();
         g.lineWidth = 1.8; g.strokeStyle = '#fff'; g.stroke(); g.restore();
       }
     }
